@@ -163,7 +163,7 @@ const submitCreditNote = () => {
                 <div class="flex items-center space-x-3">
                     <!-- PDF Download -->
                     <a
-                        :href="route('invoices.show', invoice.id) + '?pdf=1'"
+                        :href="route('invoices.pdf.stream', invoice.id)"
                         target="_blank"
                         class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                     >

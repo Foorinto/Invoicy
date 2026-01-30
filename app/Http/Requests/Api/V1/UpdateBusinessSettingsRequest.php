@@ -60,7 +60,9 @@ class UpdateBusinessSettingsRequest extends FormRequest
             'default_custom_vat_mention' => ['nullable', 'string', 'max:1000'],
             'default_pdf_color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'show_phone_on_invoice' => ['boolean'],
             'email' => ['required', 'email', 'max:255'],
+            'show_email_on_invoice' => ['boolean'],
             'logo_path' => ['nullable', 'string', 'max:255'],
         ];
     }

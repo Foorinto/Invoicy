@@ -373,17 +373,17 @@
                     {{ $seller['address'] ?? '' }}<br>
                     {{ $seller['postal_code'] ?? '' }} {{ $seller['city'] ?? '' }} {{ $seller['country'] ?? '' }}
                 </div>
-                @if(!empty($seller['matricule']))
-                    <div class="company-details">N° Matricule : {{ $seller['matricule'] }}</div>
-                @endif
                 @if(!empty($seller['rcs_number']))
                     <div class="company-details">N° RCS : {{ $seller['rcs_number'] }}</div>
                 @endif
-                @if(($seller['vat_regime'] ?? '') === 'assujetti' && !empty($seller['vat_number']))
+                @if(!empty($seller['vat_number']))
                     <div class="company-details">N° TVA : {{ $seller['vat_number'] }}</div>
                 @endif
-                @if(!empty($seller['establishment_authorization']))
-                    <div class="company-details">Autorisation : {{ $seller['establishment_authorization'] }}</div>
+                @if(!empty($seller['show_email_on_invoice']) && !empty($seller['email']))
+                    <div class="company-details">{{ $seller['email'] }}</div>
+                @endif
+                @if(!empty($seller['show_phone_on_invoice']) && !empty($seller['phone']))
+                    <div class="company-details">{{ $seller['phone'] }}</div>
                 @endif
 
                 <div class="date-row">

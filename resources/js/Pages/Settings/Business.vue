@@ -51,7 +51,9 @@ const form = useForm({
     default_custom_vat_mention: props.settings?.default_custom_vat_mention ?? '',
     default_pdf_color: props.settings?.default_pdf_color ?? props.defaultPdfColor,
     phone: props.settings?.phone ?? '',
+    show_phone_on_invoice: props.settings?.show_phone_on_invoice ?? false,
     email: props.settings?.email ?? '',
+    show_email_on_invoice: props.settings?.show_email_on_invoice ?? false,
 });
 
 const isCustomColor = computed(() => {
@@ -66,12 +68,6 @@ const logoInput = ref(null);
 const logoPreview = ref(props.settings?.logo_url ?? null);
 
 const isVatRequired = computed(() => form.vat_regime === 'assujetti');
-
-watch(() => form.vat_regime, (newValue) => {
-    if (newValue === 'franchise') {
-        form.vat_number = '';
-    }
-});
 
 const submit = () => {
     form.put(route('settings.business.update'), {
@@ -406,13 +402,12 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full font-mono uppercase"
                                     :required="isVatRequired"
-                                    :disabled="!isVatRequired"
                                     maxlength="20"
                                     placeholder="LU12345678"
-                                    :class="{ 'bg-gray-100 dark:bg-gray-600': !isVatRequired }"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Format Luxembourg : LU + 8 chiffres
+                                    <span v-if="!isVatRequired"> (conservé pour référence)</span>
                                 </p>
                                 <InputError :message="form.errors.vat_number" class="mt-2" />
                             </div>
@@ -684,6 +679,16 @@ const cancelLogoUpload = () => {
                                     required
                                     placeholder="contact@example.lu"
                                 />
+                                <label class="mt-2 flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        v-model="form.show_email_on_invoice"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                                        Afficher sur les factures
+                                    </span>
+                                </label>
                                 <InputError :message="form.errors.email" class="mt-2" />
                             </div>
 
@@ -696,6 +701,16 @@ const cancelLogoUpload = () => {
                                     class="mt-1 block w-full"
                                     placeholder="+352 123 456 789"
                                 />
+                                <label class="mt-2 flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        v-model="form.show_phone_on_invoice"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                                        Afficher sur les factures
+                                    </span>
+                                </label>
                                 <InputError :message="form.errors.phone" class="mt-2" />
                             </div>
                         </div>
@@ -703,7 +718,20 @@ const cancelLogoUpload = () => {
                 </div>
 
                 <!-- Actions -->
-                <div class="flex justify-end space-x-3">
+                <div class="flex justify-end items-center gap-4">
+                    <Transition
+                        enter-active-class="transition ease-in-out"
+                        enter-from-class="opacity-0"
+                        leave-active-class="transition ease-in-out"
+                        leave-to-class="opacity-0"
+                    >
+                        <p
+                            v-if="form.recentlySuccessful"
+                            class="text-sm text-green-600 dark:text-green-400"
+                        >
+                            Enregistré
+                        </p>
+                    </Transition>
                     <PrimaryButton
                         :disabled="form.processing"
                         :class="{ 'opacity-25': form.processing }"
@@ -712,21 +740,6 @@ const cancelLogoUpload = () => {
                         <span v-else>Enregistrer</span>
                     </PrimaryButton>
                 </div>
-
-                <!-- Success message -->
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
-                >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-green-600 dark:text-green-400"
-                    >
-                        Paramètres enregistrés.
-                    </p>
-                </Transition>
             </form>
         </div>
     </AppLayout>

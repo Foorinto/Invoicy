@@ -30,7 +30,9 @@ class BusinessSettings extends Model
         'default_custom_vat_mention',
         'default_pdf_color',
         'phone',
+        'show_phone_on_invoice',
         'email',
+        'show_email_on_invoice',
         'logo_path',
     ];
 
@@ -70,6 +72,8 @@ class BusinessSettings extends Model
     protected $casts = [
         'vat_regime' => 'string',
         'default_hourly_rate' => 'decimal:2',
+        'show_email_on_invoice' => 'boolean',
+        'show_phone_on_invoice' => 'boolean',
     ];
 
     /**
@@ -111,7 +115,9 @@ class BusinessSettings extends Model
             'bank_name' => $this->bank_name,
             'vat_regime' => $this->vat_regime,
             'phone' => $this->phone,
+            'show_phone_on_invoice' => $this->show_phone_on_invoice,
             'email' => $this->email,
+            'show_email_on_invoice' => $this->show_email_on_invoice,
             'logo_path' => $this->logo_path,
             'pdf_color' => $this->getEffectivePdfColor(),
         ];

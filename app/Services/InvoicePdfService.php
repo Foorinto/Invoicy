@@ -205,13 +205,17 @@ class InvoicePdfService
             'city' => $settings->city,
             'country' => $settings->country_code ?? 'Luxembourg',
             'matricule' => $settings->matricule,
+            'rcs_number' => $settings->rcs_number,
+            'establishment_authorization' => $settings->establishment_authorization,
             'vat_number' => $settings->vat_number,
             'vat_regime' => $settings->vat_regime,
             'iban' => $settings->iban,
             'bic' => $settings->bic,
             'bank_name' => $settings->bank_name,
             'email' => $settings->email,
+            'show_email_on_invoice' => $settings->show_email_on_invoice,
             'phone' => $settings->phone,
+            'show_phone_on_invoice' => $settings->show_phone_on_invoice,
             'website' => null,
         ] : [];
 
