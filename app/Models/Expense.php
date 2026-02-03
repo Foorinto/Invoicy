@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\DatabaseHelper;
+use App\Traits\Auditable;
 use App\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Expense extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes, InteractsWithMedia, BelongsToUser;
+    use HasFactory, SoftDeletes, InteractsWithMedia, BelongsToUser, Auditable;
 
     public const CATEGORY_HARDWARE = 'hardware';
     public const CATEGORY_SOFTWARE = 'software';

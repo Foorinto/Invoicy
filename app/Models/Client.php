@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\VatCalculationService;
+use App\Traits\Auditable;
 use App\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToUser;
+    use HasFactory, SoftDeletes, BelongsToUser, Auditable;
 
     protected $fillable = [
         'name',

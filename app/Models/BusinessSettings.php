@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use App\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BusinessSettings extends Model
 {
-    use HasFactory, BelongsToUser;
+    use HasFactory, BelongsToUser, Auditable;
 
     protected $fillable = [
         'company_name',
