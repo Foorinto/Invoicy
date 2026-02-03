@@ -10,7 +10,7 @@ class GenerateInvoiceNumberAction
     /**
      * Prefix for regular invoices.
      */
-    public const PREFIX_INVOICE = 'FAC';
+    public const PREFIX_INVOICE = 'F';
 
     /**
      * Prefix for credit notes.
@@ -19,7 +19,7 @@ class GenerateInvoiceNumberAction
 
     /**
      * Generate the next invoice/credit note number.
-     * Format: PREFIX-YYYY-XXX (e.g., FAC-2026-001 or AV-2026-001)
+     * Format: PREFIX-YYYY-XXX (e.g., F-2026-001 or AV-2026-001)
      * Numbers are sequential per year and type, never reused.
      */
     public function execute(?int $year = null, string $type = Invoice::TYPE_INVOICE): string
@@ -48,7 +48,7 @@ class GenerateInvoiceNumberAction
                 $nextNumber = 1;
             }
 
-            // Format with padding (e.g., FAC-2026-001 or AV-2026-001)
+            // Format with padding (e.g., F-2026-001 or AV-2026-001)
             $padding = config('billing.invoice_number_padding', 3);
 
             return sprintf('%s-%d-%0' . $padding . 'd', $prefix, $year, $nextNumber);

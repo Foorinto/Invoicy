@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DatabaseHelper;
 use App\Http\Requests\Api\V1\StoreExpenseRequest;
 use App\Http\Requests\Api\V1\UpdateExpenseRequest;
 use App\Models\Expense;
@@ -65,7 +66,7 @@ class ExpenseController extends Controller
         ')->first();
 
         // Get available years for filter
-        $years = Expense::selectRaw('DISTINCT strftime("%Y", date) as year')
+        $years = Expense::selectRaw(DatabaseHelper::distinctYear('date'))
             ->orderByDesc('year')
             ->pluck('year')
             ->filter()
@@ -203,7 +204,7 @@ class ExpenseController extends Controller
         $yearSummary = Expense::getSummary($year);
 
         // Get available years
-        $years = Expense::selectRaw('DISTINCT strftime("%Y", date) as year')
+        $years = Expense::selectRaw(DatabaseHelper::distinctYear('date'))
             ->orderByDesc('year')
             ->pluck('year')
             ->filter()

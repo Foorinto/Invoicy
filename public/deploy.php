@@ -25,11 +25,11 @@ set_time_limit(300);
 echo "<pre style='font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; margin: 0;'>";
 echo "=== DEPLOIEMENT FAKTUR.LU ===\n\n";
 
-// Charger l'autoloader
-require __DIR__ . '/vendor/autoload.php';
+// Charger l'autoloader (depuis le dossier public/)
+require __DIR__ . '/../vendor/autoload.php';
 
 // Charger l'application Laravel
-$app = require_once __DIR__ . '/bootstrap/app.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 
 // Action demandée
@@ -62,12 +62,54 @@ switch ($action) {
 
     case 'optimize':
         echo ">>> Optimisation pour la production...\n";
-        $kernel->call('config:cache');
-        echo "✓ Config mise en cache\n";
-        $kernel->call('route:cache');
-        echo "✓ Routes mises en cache\n";
-        $kernel->call('view:cache');
-        echo "✓ Vues compilées\n";
+        try {
+            $kernel->call('config:cache');
+            echo "✓ Config mise en cache\n";
+        } catch (Exception $e) {
+            echo "✗ Config erreur: " . $e->getMessage() . "\n";
+        }
+        try {
+            $kernel->call('route:cache');
+            echo "✓ Routes mises en cache\n";
+        } catch (Exception $e) {
+            echo "✗ Routes erreur: " . $e->getMessage() . "\n";
+        }
+        try {
+            $kernel->call('view:cache');
+            echo "✓ Vues compilées\n";
+        } catch (Exception $e) {
+            echo "✗ Vues erreur: " . $e->getMessage() . "\n";
+        }
+        break;
+
+    case 'config:cache':
+        echo ">>> Cache config...\n";
+        try {
+            $kernel->call('config:cache');
+            echo "✓ Config mise en cache\n";
+        } catch (Exception $e) {
+            echo "✗ Erreur: " . $e->getMessage() . "\n";
+        }
+        break;
+
+    case 'route:cache':
+        echo ">>> Cache routes...\n";
+        try {
+            $kernel->call('route:cache');
+            echo "✓ Routes mises en cache\n";
+        } catch (Exception $e) {
+            echo "✗ Erreur: " . $e->getMessage() . "\n";
+        }
+        break;
+
+    case 'view:cache':
+        echo ">>> Compilation vues...\n";
+        try {
+            $kernel->call('view:cache');
+            echo "✓ Vues compilées\n";
+        } catch (Exception $e) {
+            echo "✗ Erreur: " . $e->getMessage() . "\n";
+        }
         break;
 
     case 'storage:link':
@@ -80,6 +122,49 @@ switch ($action) {
         echo ">>> Génération de la clé d'application...\n";
         $exitCode = $kernel->call('key:generate', ['--force' => true]);
         echo $exitCode === 0 ? "✓ Clé générée\n" : "✗ Erreur\n";
+        break;
+
+    case 'fix-invoice-numbers':
+        echo ">>> Correction des numéros de facture FAC -> F...\n";
+        try {
+            // Lire le .env directement
+            $envFile = __DIR__ . '/../.env';
+            $envContent = file_get_contents($envFile);
+            preg_match('/DB_HOST=(.*)/', $envContent, $hostMatch);
+            preg_match('/DB_DATABASE=(.*)/', $envContent, $dbMatch);
+            preg_match('/DB_USERNAME=(.*)/', $envContent, $userMatch);
+            preg_match('/DB_PASSWORD=(.*)/', $envContent, $passMatch);
+
+            $host = trim($hostMatch[1] ?? 'localhost');
+            $database = trim($dbMatch[1] ?? '');
+            $username = trim($userMatch[1] ?? '');
+            $password = trim($passMatch[1] ?? '');
+
+            echo "Connexion à {$database}@{$host}...\n";
+
+            $pdo = new PDO(
+                "mysql:host={$host};dbname={$database}",
+                $username,
+                $password
+            );
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            // Récupérer les factures avec FAC-
+            $stmt = $pdo->query("SELECT id, number FROM invoices WHERE number LIKE 'FAC-%'");
+            $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $count = 0;
+            foreach ($invoices as $invoice) {
+                $newNumber = str_replace('FAC-', 'F-', $invoice['number']);
+                $update = $pdo->prepare("UPDATE invoices SET number = ? WHERE id = ?");
+                $update->execute([$newNumber, $invoice['id']]);
+                echo "  {$invoice['number']} -> {$newNumber}\n";
+                $count++;
+            }
+            echo "✓ {$count} facture(s) corrigée(s)\n";
+        } catch (Exception $e) {
+            echo "✗ Erreur: " . $e->getMessage() . "\n";
+        }
         break;
 
     case 'status':

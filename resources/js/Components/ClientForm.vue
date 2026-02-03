@@ -191,7 +191,7 @@ const submit = () => {
                             type="text"
                             class="mt-1 block w-full"
                             required
-                            :placeholder="isB2B ? 'ACME Corporation' : 'Jean Dupont'"
+                            :placeholder="isB2B ? 'Société Exemple SARL' : 'Marie Durand'"
                         />
                         <InputError :message="form.errors.name" class="mt-2" />
                     </div>
@@ -203,7 +203,7 @@ const submit = () => {
                             v-model="form.contact_name"
                             type="text"
                             class="mt-1 block w-full"
-                            placeholder="Jean Martin"
+                            placeholder="Pierre Exemple"
                         />
                         <InputError :message="form.errors.contact_name" class="mt-2" />
                     </div>
@@ -229,7 +229,7 @@ const submit = () => {
                         v-model="form.address"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         rows="2"
-                        placeholder="45 Avenue Kennedy"
+                        placeholder="10 Rue Fictive"
                     ></textarea>
                     <InputError :message="form.errors.address" class="mt-2" />
                 </div>
@@ -283,7 +283,7 @@ const submit = () => {
                             v-model="form.phone"
                             type="tel"
                             class="mt-1 block w-full"
-                            placeholder="+352 123 456 789"
+                            placeholder="+352 000 000 000"
                         />
                         <InputError :message="form.errors.phone" class="mt-2" />
                     </div>
@@ -300,7 +300,7 @@ const submit = () => {
                             v-model="form.vat_number"
                             type="text"
                             class="mt-1 block w-full font-mono uppercase"
-                            placeholder="FR12345678901"
+                            placeholder="LU00000000"
                             :class="{ 'bg-gray-100 dark:bg-gray-600': !isB2B }"
                         />
                         <InputError :message="form.errors.vat_number" class="mt-2" />
@@ -345,7 +345,7 @@ const submit = () => {
                             v-model="form.registration_number"
                             type="text"
                             class="mt-1 block w-full font-mono"
-                            placeholder="B123456"
+                            placeholder="B000000"
                         />
                         <InputError :message="form.errors.registration_number" class="mt-2" />
                     </div>

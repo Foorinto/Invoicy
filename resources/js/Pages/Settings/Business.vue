@@ -262,7 +262,7 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     required
-                                    placeholder="LuxDev Consulting"
+                                    placeholder="Ma Société SARL"
                                 />
                                 <InputError :message="form.errors.company_name" class="mt-2" />
                             </div>
@@ -275,7 +275,7 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full"
                                     required
-                                    placeholder="Alexandre Beaudier"
+                                    placeholder="Prénom Nom"
                                 />
                                 <InputError :message="form.errors.legal_name" class="mt-2" />
                             </div>
@@ -289,7 +289,7 @@ const cancelLogoUpload = () => {
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 rows="2"
                                 required
-                                placeholder="12 Rue de la Gare"
+                                placeholder="1 Rue Exemple"
                             ></textarea>
                             <InputError :message="form.errors.address" class="mt-2" />
                         </div>
@@ -361,7 +361,7 @@ const cancelLogoUpload = () => {
                                     class="mt-1 block w-full font-mono"
                                     required
                                     maxlength="13"
-                                    placeholder="1234567890123"
+                                    placeholder="0000000000000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Numéro d'identification national à 13 chiffres
@@ -380,7 +380,7 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full font-mono uppercase"
                                     maxlength="20"
-                                    placeholder="A12345"
+                                    placeholder="A00000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Registre de Commerce et des Sociétés (ex: A12345, B98765)
@@ -403,7 +403,7 @@ const cancelLogoUpload = () => {
                                     class="mt-1 block w-full font-mono uppercase"
                                     :required="isVatRequired"
                                     maxlength="20"
-                                    placeholder="LU12345678"
+                                    placeholder="LU00000000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Format Luxembourg : LU + 8 chiffres
@@ -484,7 +484,7 @@ const cancelLogoUpload = () => {
                                 v-model="form.bank_name"
                                 type="text"
                                 class="mt-1 block w-full"
-                                placeholder="Hello Bank, BGL BNP Paribas, ..."
+                                placeholder="Nom de votre banque"
                             />
                             <InputError :message="form.errors.bank_name" class="mt-2" />
                         </div>
@@ -498,7 +498,7 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full font-mono uppercase"
                                     required
-                                    placeholder="LU12 3456 7890 1234 5678"
+                                    placeholder="LU00 0000 0000 0000 0000"
                                 />
                                 <InputError :message="form.errors.iban" class="mt-2" />
                             </div>
@@ -511,7 +511,7 @@ const cancelLogoUpload = () => {
                                     type="text"
                                     class="mt-1 block w-full font-mono uppercase"
                                     required
-                                    placeholder="BNPAFRPPXXX"
+                                    placeholder="AAAABBCCXXX"
                                 />
                                 <InputError :message="form.errors.bic" class="mt-2" />
                             </div>
@@ -677,7 +677,7 @@ const cancelLogoUpload = () => {
                                     type="email"
                                     class="mt-1 block w-full"
                                     required
-                                    placeholder="contact@example.lu"
+                                    placeholder="email@exemple.lu"
                                 />
                                 <label class="mt-2 flex items-center">
                                     <input
@@ -699,7 +699,7 @@ const cancelLogoUpload = () => {
                                     v-model="form.phone"
                                     type="tel"
                                     class="mt-1 block w-full"
-                                    placeholder="+352 123 456 789"
+                                    placeholder="+352 000 000 000"
                                 />
                                 <label class="mt-2 flex items-center">
                                     <input

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DatabaseHelper;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -47,7 +48,7 @@ class RevenueBookController extends Controller
         $years = Invoice::query()
             ->where('status', Invoice::STATUS_PAID)
             ->whereNotNull('paid_at')
-            ->selectRaw('DISTINCT strftime("%Y", paid_at) as year')
+            ->selectRaw(DatabaseHelper::distinctYear('paid_at'))
             ->orderByDesc('year')
             ->pluck('year')
             ->filter()

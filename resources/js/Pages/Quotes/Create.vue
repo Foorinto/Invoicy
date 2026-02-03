@@ -129,7 +129,7 @@ if (form.items.length === 0) {
                                         v-model="item.title"
                                         type="text"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Développement API REST"
+                                        placeholder="Titre de la prestation"
                                         required
                                     />
                                 </div>

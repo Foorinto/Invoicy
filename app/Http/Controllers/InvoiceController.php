@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CreateCreditNoteAction;
+use App\Helpers\DatabaseHelper;
 use App\Actions\FinalizeInvoiceAction;
 use App\Exceptions\ImmutableInvoiceException;
 use App\Http\Requests\Api\V1\StoreInvoiceRequest;
@@ -60,7 +61,7 @@ class InvoiceController extends Controller
             ->withQueryString();
 
         // Get available years for filter
-        $years = Invoice::selectRaw('DISTINCT strftime("%Y", issued_at) as year')
+        $years = Invoice::selectRaw(DatabaseHelper::distinctYear('issued_at'))
             ->whereNotNull('issued_at')
             ->orderByDesc('year')
             ->pluck('year')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DatabaseHelper;
 use App\Models\AuditExport;
 use App\Services\AuditExportService;
 use Carbon\Carbon;
@@ -36,7 +37,7 @@ class AuditExportController extends Controller
                 \App\Models\Invoice::STATUS_SENT,
                 \App\Models\Invoice::STATUS_PAID,
             ])
-            ->selectRaw('DISTINCT strftime("%Y", issued_at) as year')
+            ->selectRaw(DatabaseHelper::distinctYear('issued_at'))
             ->whereNotNull('issued_at')
             ->orderByDesc('year')
             ->pluck('year')

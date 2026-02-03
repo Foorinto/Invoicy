@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ConvertQuoteToInvoiceAction;
+use App\Helpers\DatabaseHelper;
 use App\Http\Requests\Api\V1\StoreQuoteRequest;
 use App\Http\Requests\Api\V1\UpdateQuoteRequest;
 use App\Models\Client;
@@ -48,7 +49,7 @@ class QuoteController extends Controller
             ->withQueryString();
 
         // Get available years for filter
-        $years = Quote::selectRaw('DISTINCT strftime("%Y", created_at) as year')
+        $years = Quote::selectRaw(DatabaseHelper::distinctYear('created_at'))
             ->whereNotNull('created_at')
             ->orderByDesc('year')
             ->pluck('year')

@@ -112,7 +112,7 @@ const submit = () => {
                                 v-model="form.provider_name"
                                 type="text"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Ex: Amazon, JetBrains..."
+                                placeholder="Ex: Fournisseur XYZ"
                                 required
                             />
                             <InputError :message="form.errors.provider_name" class="mt-2" />
@@ -225,7 +225,7 @@ const submit = () => {
                                 v-model="form.reference"
                                 type="text"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Ex: INV-2024-001"
+                                placeholder="Ex: REF-0000"
                             />
                             <InputError :message="form.errors.reference" class="mt-2" />
                         </div>

@@ -109,13 +109,13 @@ class AuditExportService
         // Group by type and year
         $grouped = $invoices->groupBy(function ($invoice) {
             $year = $invoice->issued_at->year;
-            $type = $invoice->type === Invoice::TYPE_CREDIT_NOTE ? 'AV' : 'FAC';
+            $type = $invoice->type === Invoice::TYPE_CREDIT_NOTE ? 'AV' : 'F';
             return "{$type}-{$year}";
         });
 
         foreach ($grouped as $key => $group) {
             $numbers = $group->map(function ($invoice) {
-                // Extract the sequence number from the invoice number (e.g., FAC-2026-001 -> 1)
+                // Extract the sequence number from the invoice number (e.g., F-2026-001 -> 1)
                 if (preg_match('/\d{4}-(\d+)$/', $invoice->number, $matches)) {
                     return (int) $matches[1];
                 }

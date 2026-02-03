@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\DatabaseHelper;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\TimeEntry;
@@ -245,7 +246,7 @@ class DashboardService
                 Invoice::STATUS_PAID,
             ])
             ->where('type', Invoice::TYPE_INVOICE)
-            ->selectRaw('CAST(strftime("%m", issued_at) AS INTEGER) as month, SUM(total_ht) as revenue')
+            ->selectRaw(DatabaseHelper::month('issued_at') . ' as month, SUM(total_ht) as revenue')
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('revenue', 'month')
@@ -400,11 +401,11 @@ class DashboardService
      */
     public function getAvailableYears(): array
     {
-        $invoiceYears = Invoice::selectRaw('DISTINCT CAST(strftime("%Y", issued_at) AS INTEGER) as year')
+        $invoiceYears = Invoice::selectRaw(DatabaseHelper::distinctYearInt('issued_at'))
             ->whereNotNull('issued_at')
             ->pluck('year');
 
-        $expenseYears = Expense::selectRaw('DISTINCT CAST(strftime("%Y", date) AS INTEGER) as year')
+        $expenseYears = Expense::selectRaw(DatabaseHelper::distinctYearInt('date'))
             ->pluck('year');
 
         $years = $invoiceYears->merge($expenseYears)

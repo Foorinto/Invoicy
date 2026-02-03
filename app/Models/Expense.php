@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\DatabaseHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -245,17 +246,19 @@ class Expense extends Model implements HasMedia
      */
     public static function getMonthlySummary(int $year): array
     {
+        $monthExpr = DatabaseHelper::month('date');
+
         return static::query()
             ->whereYear('date', $year)
-            ->selectRaw('
-                strftime("%m", date) as month,
+            ->selectRaw("
+                {$monthExpr} as month,
                 SUM(amount_ht) as total_ht,
                 SUM(amount_vat) as total_vat,
                 SUM(amount_ttc) as total_ttc,
                 COUNT(*) as count
-            ')
-            ->groupByRaw('strftime("%m", date)')
-            ->orderByRaw('strftime("%m", date)')
+            ")
+            ->groupByRaw($monthExpr)
+            ->orderByRaw($monthExpr)
             ->get()
             ->keyBy('month')
             ->toArray();
