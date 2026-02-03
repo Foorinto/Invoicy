@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Send the email verification notification.
@@ -42,7 +43,26 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'two_factor_enabled',
+    ];
+
+    /**
+     * Check if the user has two-factor authentication enabled.
+     */
+    public function getTwoFactorEnabledAttribute(): bool
+    {
+        return $this->hasEnabledTwoFactorAuthentication();
+    }
 
     /**
      * Get the attributes that should be cast.
