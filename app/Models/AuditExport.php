@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditExport extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToUser;
 
     public const FORMAT_CSV = 'csv';
     public const FORMAT_JSON = 'json';

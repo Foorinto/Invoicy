@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BusinessSettings extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToUser;
 
     protected $fillable = [
         'company_name',
@@ -77,20 +78,56 @@ class BusinessSettings extends Model
     ];
 
     /**
-     * Get the singleton instance of BusinessSettings.
-     * Creates a new instance if none exists.
+     * Get the business settings for the authenticated user.
+     * Returns null if no settings exist or no user is authenticated.
      */
     public static function getInstance(): ?self
     {
+        if (!auth()->check()) {
+            return null;
+        }
+
         return static::first();
     }
 
     /**
-     * Check if business settings have been configured.
+     * Get the business settings for a specific user.
+     */
+    public static function getForUser(int|User $user): ?self
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return static::withoutGlobalScope('user')
+            ->where('user_id', $userId)
+            ->first();
+    }
+
+    /**
+     * Check if business settings have been configured for the authenticated user.
      */
     public static function isConfigured(): bool
     {
+        if (!auth()->check()) {
+            return false;
+        }
+
         return static::exists();
+    }
+
+    /**
+     * Get or create business settings for the authenticated user.
+     */
+    public static function getOrCreate(): self
+    {
+        $instance = static::getInstance();
+
+        if (!$instance) {
+            $instance = static::create([
+                'user_id' => auth()->id(),
+            ]);
+        }
+
+        return $instance;
     }
 
     /**
