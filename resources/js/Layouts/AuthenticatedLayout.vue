@@ -5,13 +5,34 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 
+const page = usePage();
 const showingNavigationDropdown = ref(false);
+
+const stopImpersonation = () => {
+    router.post(route('admin.impersonation.stop'));
+};
 </script>
 
 <template>
     <div>
+        <!-- Impersonation Banner -->
+        <div
+            v-if="page.props.impersonating"
+            class="bg-purple-600 px-4 py-2 text-center text-sm text-white"
+        >
+            <span>
+                Vous êtes connecté en tant que <strong>{{ page.props.impersonating.user_name }}</strong>
+            </span>
+            <button
+                @click="stopImpersonation"
+                class="ml-4 rounded bg-white px-3 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50"
+            >
+                Retourner au panel admin
+            </button>
+        </div>
+
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             <nav
                 class="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"

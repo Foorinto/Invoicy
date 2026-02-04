@@ -40,9 +40,11 @@ class SecurityHeaders
             );
         }
 
-        // Content Security Policy
-        $csp = $this->buildContentSecurityPolicy();
-        $response->headers->set('Content-Security-Policy', $csp);
+        // Content Security Policy - désactivé en local pour Vite
+        if (config('app.env') !== 'local') {
+            $csp = $this->buildContentSecurityPolicy();
+            $response->headers->set('Content-Security-Policy', $csp);
+        }
 
         return $response;
     }
@@ -56,17 +58,17 @@ class SecurityHeaders
             // Default fallback
             "default-src 'self'",
 
-            // Scripts - allow inline for Vite/Vue
+            // Scripts - allow inline for Vue
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 
-            // Styles - allow inline for Tailwind
-            "style-src 'self' 'unsafe-inline'",
+            // Styles - allow inline for Tailwind + Google/Bunny fonts
+            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com",
 
             // Images - allow data URIs for QR codes
             "img-src 'self' data: https:",
 
-            // Fonts
-            "font-src 'self'",
+            // Fonts - Google/Bunny fonts
+            "font-src 'self' https://fonts.bunny.net https://fonts.gstatic.com",
 
             // Connect - API calls
             "connect-src 'self'",

@@ -135,12 +135,30 @@ class AppServiceProvider extends ServiceProvider
                     return $this->rateLimitResponse($headers);
                 });
         });
+
+        // Admin login - strict rate limiting (3/minute par IP)
+        RateLimiter::for('admin-login', function (Request $request) {
+            return Limit::perMinute(3)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return $this->rateLimitResponse($headers, 'Trop de tentatives. Veuillez patienter.');
+                });
+        });
+
+        // Admin 2FA - separate rate limiting (5/minute par IP)
+        RateLimiter::for('admin-2fa', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return $this->rateLimitResponse($headers, 'Trop de tentatives 2FA. Veuillez patienter.');
+                });
+        });
     }
 
     /**
      * Generate a rate limit response.
      */
-    protected function rateLimitResponse(array $headers, string $message = null): \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
+    protected function rateLimitResponse(array $headers, ?string $message = null): \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
     {
         $retryAfter = $headers['Retry-After'] ?? 60;
         $message = $message ?? 'Trop de requêtes. Veuillez réessayer dans ' . $retryAfter . ' secondes.';

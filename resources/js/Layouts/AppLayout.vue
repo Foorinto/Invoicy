@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -8,6 +8,10 @@ import ThemeToggle from '@/Components/ThemeToggle.vue';
 
 const showingSidebar = ref(true);
 const page = usePage();
+
+const stopImpersonation = () => {
+    router.post(route('admin.impersonation.stop'));
+};
 
 const navigation = [
     { name: 'Dashboard', href: 'dashboard', icon: 'chart-bar' },
@@ -42,10 +46,27 @@ const routeExists = (routeName) => {
 
 <template>
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <!-- Impersonation Banner -->
+        <div
+            v-if="page.props.impersonating"
+            class="fixed top-0 left-0 right-0 z-[100] bg-purple-600 px-4 py-2 text-center text-sm text-white"
+        >
+            <span>
+                Vous êtes connecté en tant que <strong>{{ page.props.impersonating.user_name }}</strong>
+            </span>
+            <button
+                @click="stopImpersonation"
+                class="ml-4 rounded bg-white px-3 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50"
+            >
+                Retourner au panel admin
+            </button>
+        </div>
+
         <!-- Sidebar -->
         <aside
             :class="[
                 showingSidebar ? 'translate-x-0' : '-translate-x-full',
+                page.props.impersonating ? 'top-10' : 'top-0',
                 'fixed inset-y-0 left-0 z-50 w-64 transform bg-white transition-transform duration-300 ease-in-out dark:bg-gray-800 lg:translate-x-0',
             ]"
         >
@@ -200,7 +221,7 @@ const routeExists = (routeName) => {
         ></div>
 
         <!-- Main content -->
-        <div class="lg:pl-64">
+        <div :class="['lg:pl-64', page.props.impersonating ? 'pt-10' : '']">
             <!-- Top bar -->
             <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-700 dark:bg-gray-800 sm:px-6 lg:px-8">
                 <!-- Mobile menu button -->
