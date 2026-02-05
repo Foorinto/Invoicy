@@ -136,6 +136,9 @@ const toggleFaq = (index) => {
                         <a href="#faq" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
                             FAQ
                         </a>
+                        <Link :href="route('faia-validator')" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                            Validateur FAIA
+                        </Link>
                     </div>
 
                     <!-- Auth links -->
@@ -183,6 +186,7 @@ const toggleFaq = (index) => {
                         <a href="#how-it-works" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Comment ça marche</a>
                         <a href="#pricing" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Tarifs</a>
                         <a href="#faq" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">FAQ</a>
+                        <Link :href="route('faia-validator')" @click="mobileMenuOpen = false" class="text-sm font-medium text-[#9b5de5] hover:text-[#8b4ed5] py-2">Validateur FAIA gratuit</Link>
                         <template v-if="canLogin && !$page.props.auth.user">
                             <Link :href="route('login')" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Connexion</Link>
                             <Link v-if="canRegister" :href="route('register')" class="bg-[#9b5de5] text-white text-sm font-semibold px-5 py-3 rounded-xl text-center">Créer un compte</Link>
@@ -728,6 +732,7 @@ const toggleFaq = (index) => {
                             <li><a href="#features" class="text-slate-600 hover:text-slate-900">Fonctionnalités</a></li>
                             <li><a href="#pricing" class="text-slate-600 hover:text-slate-900">Tarifs</a></li>
                             <li><a href="#faq" class="text-slate-600 hover:text-slate-900">FAQ</a></li>
+                            <li><Link :href="route('faia-validator')" class="text-slate-600 hover:text-slate-900">Validateur FAIA</Link></li>
                         </ul>
                     </div>
                     <div>

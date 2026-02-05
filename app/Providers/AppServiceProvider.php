@@ -153,6 +153,15 @@ class AppServiceProvider extends ServiceProvider
                     return $this->rateLimitResponse($headers, 'Trop de tentatives 2FA. Veuillez patienter.');
                 });
         });
+
+        // Public FAIA Validator - 10/minute par IP (prevent abuse)
+        RateLimiter::for('faia-validator', function (Request $request) {
+            return Limit::perMinute(10)
+                ->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return $this->rateLimitResponse($headers, 'Trop de validations. Veuillez patienter une minute.');
+                });
+        });
     }
 
     /**

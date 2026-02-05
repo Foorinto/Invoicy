@@ -7,6 +7,7 @@ use App\Http\Controllers\BusinessSettingsController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FaiaValidatorController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceItemController;
 use App\Http\Controllers\ProfileController;
@@ -26,6 +27,12 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+// Public FAIA Validator - accessible without authentication
+Route::get('/validateur-faia', [FaiaValidatorController::class, 'index'])->name('faia-validator');
+Route::post('/validateur-faia/validate', [FaiaValidatorController::class, 'validate'])
+    ->middleware('throttle:faia-validator')
+    ->name('faia-validator.validate');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
