@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
 
 defineProps({
     canLogin: Boolean,
@@ -78,25 +79,21 @@ const validate = async () => {
     formData.append('file', file.value);
 
     try {
-        const response = await fetch(route('faia-validator.validate'), {
-            method: 'POST',
-            body: formData,
+        const response = await axios.post(route('faia-validator.validate'), formData, {
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                'Accept': 'application/json',
+                'Content-Type': 'multipart/form-data',
             },
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            error.value = data.message || 'Une erreur est survenue lors de la validation.';
-            return;
-        }
-
-        result.value = data;
+        result.value = response.data;
     } catch (e) {
-        error.value = 'Erreur de connexion. Veuillez réessayer.';
+        if (e.response?.data?.message) {
+            error.value = e.response.data.message;
+        } else if (e.response?.data?.errors?.file) {
+            error.value = e.response.data.errors.file[0];
+        } else {
+            error.value = 'Erreur de connexion. Veuillez réessayer.';
+        }
     } finally {
         isValidating.value = false;
     }
