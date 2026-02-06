@@ -319,26 +319,17 @@
             bottom: 10px;
             left: 25px;
             right: 25px;
-            text-align: right;
+            text-align: center;
             font-size: 7pt;
             color: #999;
         }
 
-        .page-number {
-            text-align: right;
-        }
-
-        /* Branding footer for Starter plan */
-        .branding-footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #e5e5e5;
-            text-align: center;
-            font-size: 8pt;
+        /* Branding in footer */
+        .branding {
             color: #9ca3af;
         }
 
-        .branding-footer a {
+        .branding a {
             color: #7c3aed;
             text-decoration: none;
         }
@@ -518,18 +509,14 @@
                 Pour accepter ce devis, veuillez nous le retourner signé avec la mention "Bon pour accord".
             </div>
         </div>
-
-        {{-- Branding for Starter (free) plan users --}}
-        @if($showBranding ?? false)
-        <div class="branding-footer">
-            Créé avec <a href="https://faktur.lu">faktur.lu</a> — Facturation simplifiée pour le Luxembourg
-        </div>
-        @endif
     </div>
 
     <!-- Footer -->
     <div class="footer">
-        <div class="page-number">1/1</div>
+        @if($showBranding ?? false)
+            <span class="branding">Créé avec <a href="https://faktur.lu">faktur.lu</a></span> —
+        @endif
+        <span class="page-number">1/1</span>
     </div>
 </body>
 </html>
