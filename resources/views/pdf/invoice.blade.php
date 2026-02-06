@@ -16,6 +16,14 @@
             font-size: 8pt;
             line-height: 1.2;
             color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-wrapper {
+            position: relative;
+            min-height: 297mm;
+            padding-bottom: 40px;
         }
 
         .container {
@@ -324,27 +332,39 @@
 
         /* Footer */
         .footer {
-            position: fixed;
+            position: absolute;
             bottom: 10px;
             left: 25px;
             right: 25px;
-            text-align: center;
             font-size: 7pt;
-            color: #999;
-        }
-
-        /* Branding in footer */
-        .branding {
             color: #9ca3af;
         }
 
-        .branding a {
-            color: #7c3aed;
+        .footer-content {
+            display: table;
+            width: 100%;
+        }
+
+        .footer-branding {
+            display: table-cell;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer-branding a {
+            color: {{ $pdfColor ?? '#7c3aed' }};
             text-decoration: none;
+        }
+
+        .footer-page {
+            position: absolute;
+            right: 0;
+            top: 0;
         }
     </style>
 </head>
 <body>
+<div class="page-wrapper">
     <div class="container">
         <!-- Top Header with Title and Logo -->
         <div class="top-header">
@@ -557,10 +577,15 @@
 
     <!-- Footer -->
     <div class="footer">
-        @if($showBranding ?? false)
-            <span class="branding">Créé avec <a href="https://faktur.lu">faktur.lu</a></span> —
-        @endif
-        <span class="page-number">1/1</span>
+        <div class="footer-content">
+            @if($showBranding ?? false)
+                <div class="footer-branding">
+                    Créé avec <a href="https://faktur.lu">faktur.lu</a> — Facturation simplifiée pour le Luxembourg
+                </div>
+            @endif
+            <div class="footer-page">1/1</div>
+        </div>
     </div>
+</div>
 </body>
 </html>
