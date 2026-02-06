@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     timer: Object,
@@ -47,12 +50,12 @@ const stopTimer = () => {
 </script>
 
 <template>
-    <Head title="Timer en cours" />
+    <Head :title="t('running_timer')" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Timer en cours
+                {{ t('running_timer') }}
             </h1>
         </template>
 

@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import VatScenarioIndicator from '@/Components/VatScenarioIndicator.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     client: {
@@ -11,13 +14,13 @@ const props = defineProps({
 });
 
 const deleteClient = () => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${props.client.name} ?`)) {
+    if (confirm(t('confirm_delete_name', { name: props.client.name }))) {
         router.delete(route('clients.destroy', props.client.id));
     }
 };
 
 const getTypeLabel = (type) => {
-    return type === 'b2b' ? 'Entreprise (B2B)' : 'Particulier (B2C)';
+    return type === 'b2b' ? t('client_b2b') : t('client_b2c');
 };
 
 const getTypeBadgeClass = (type) => {
@@ -60,7 +63,7 @@ const getTypeBadgeClass = (type) => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
                         </svg>
-                        Modifier
+                        {{ t('edit') }}
                     </Link>
                     <button
                         v-if="client.invoices_count === 0"
@@ -70,7 +73,7 @@ const getTypeBadgeClass = (type) => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
                         </svg>
-                        Supprimer
+                        {{ t('delete') }}
                     </button>
                 </div>
             </div>
@@ -83,18 +86,18 @@ const getTypeBadgeClass = (type) => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Informations de contact
+                            {{ t('client_info') }}
                         </h2>
                     </div>
                     <dl class="divide-y divide-gray-200 dark:divide-gray-700">
                         <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nom</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('name') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 {{ client.name }}
                             </dd>
                         </div>
                         <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('email') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 <a :href="`mailto:${client.email}`" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                                     {{ client.email }}
@@ -102,7 +105,7 @@ const getTypeBadgeClass = (type) => {
                             </dd>
                         </div>
                         <div v-if="client.phone" class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Téléphone</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('phone') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 <a :href="`tel:${client.phone}`" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                                     {{ client.phone }}
@@ -110,7 +113,7 @@ const getTypeBadgeClass = (type) => {
                             </dd>
                         </div>
                         <div v-if="client.address" class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Adresse</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('address') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 whitespace-pre-line">
                                 {{ client.address }}
                                 <template v-if="client.postal_code || client.city">
@@ -128,36 +131,36 @@ const getTypeBadgeClass = (type) => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Informations fiscales
+                            {{ t('billing_settings') }}
                         </h2>
                     </div>
                     <dl class="divide-y divide-gray-200 dark:divide-gray-700">
                         <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('client_type') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 {{ getTypeLabel(client.type) }}
                             </dd>
                         </div>
                         <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Pays</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('country') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 {{ client.country_code }}
                             </dd>
                         </div>
                         <div v-if="client.vat_number" class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">N° TVA</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('vat_number') }}</dt>
                             <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 {{ client.vat_number }}
                             </dd>
                         </div>
                         <div class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Devise</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('currency') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                                 {{ client.currency }}
                             </dd>
                         </div>
                         <div v-if="client.vat_scenario" class="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Scénario TVA</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('vat_scenario_detected') }}</dt>
                             <dd class="mt-1 sm:col-span-2 sm:mt-0">
                                 <VatScenarioIndicator :scenario="client.vat_scenario" size="sm" />
                             </dd>
@@ -169,7 +172,7 @@ const getTypeBadgeClass = (type) => {
                 <div v-if="client.notes" class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Notes internes
+                            {{ t('internal_notes') }}
                         </h2>
                     </div>
                     <div class="px-6 py-4">
@@ -186,18 +189,18 @@ const getTypeBadgeClass = (type) => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Statistiques
+                            {{ t('reports') }}
                         </h2>
                     </div>
                     <div class="px-6 py-4 space-y-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Factures</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('invoices') }}</dt>
                             <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                                 {{ client.invoices_count || 0 }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Entrées de temps</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('time_tracking') }}</dt>
                             <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                                 {{ client.time_entries_count || 0 }}
                             </dd>
@@ -209,7 +212,7 @@ const getTypeBadgeClass = (type) => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Actions rapides
+                            {{ t('quick_actions') }}
                         </h2>
                     </div>
                     <div class="px-6 py-4 space-y-3">
@@ -221,7 +224,7 @@ const getTypeBadgeClass = (type) => {
                             <svg class="-ml-1 mr-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                             </svg>
-                            Nouvelle facture
+                            {{ t('new_invoice') }}
                         </button>
                         <button
                             type="button"
@@ -231,7 +234,7 @@ const getTypeBadgeClass = (type) => {
                             <svg class="-ml-1 mr-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
                             </svg>
-                            Nouveau temps
+                            {{ t('start_new_timer') }}
                         </button>
                     </div>
                 </div>
@@ -241,7 +244,7 @@ const getTypeBadgeClass = (type) => {
                     <div class="px-6 py-4">
                         <dl class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <dt class="text-gray-500 dark:text-gray-400">Créé le</dt>
+                                <dt class="text-gray-500 dark:text-gray-400">{{ t('date') }}</dt>
                                 <dd class="text-gray-900 dark:text-white">
                                     {{ new Date(client.created_at).toLocaleDateString('fr-FR') }}
                                 </dd>

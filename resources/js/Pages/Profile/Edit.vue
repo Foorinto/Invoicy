@@ -5,6 +5,9 @@ import TwoFactorAuthenticationForm from './Partials/TwoFactorAuthenticationForm.
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import { Head } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 defineProps({
     mustVerifyEmail: {
@@ -21,14 +24,14 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Profil" />
+    <Head :title="t('profile')" />
 
     <AuthenticatedLayout>
         <template #header>
             <h2
                 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200"
             >
-                Profil
+                {{ t('profile') }}
             </h2>
         </template>
 

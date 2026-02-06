@@ -69,6 +69,126 @@ const creditNoteForm = useForm({
     item_ids: null,
 });
 
+// Email sending state
+const showEmailModal = ref(false);
+const emailForm = useForm({
+    recipient_email: props.invoice.buyer_snapshot?.email || '',
+    subject: `${props.invoice.type === 'credit_note' ? 'Avoir' : 'Facture'} ${props.invoice.number}`,
+    message: '',
+    send_copy_to_self: false,
+});
+
+// Reminder state
+const showReminderModal = ref(false);
+const reminderLevel = ref(1);
+const reminderForm = useForm({
+    level: 1,
+    recipient_email: props.invoice.buyer_snapshot?.email || '',
+    subject: '',
+    message: '',
+});
+
+// Email history
+const showEmailHistory = ref(false);
+const emailHistory = ref([]);
+const loadingHistory = ref(false);
+
+const canSendEmail = computed(() => {
+    return props.invoice.status !== 'draft';
+});
+
+const canSendReminder = computed(() => {
+    return ['finalized', 'sent'].includes(props.invoice.status) && props.invoice.type !== 'credit_note';
+});
+
+const isOverdue = computed(() => {
+    if (!props.invoice.due_at) return false;
+    return new Date(props.invoice.due_at) < new Date() && !['paid', 'cancelled'].includes(props.invoice.status);
+});
+
+const daysOverdue = computed(() => {
+    if (!props.invoice.due_at || !isOverdue.value) return 0;
+    const due = new Date(props.invoice.due_at);
+    const now = new Date();
+    return Math.floor((now - due) / (1000 * 60 * 60 * 24));
+});
+
+const openEmailModal = () => {
+    emailForm.recipient_email = props.invoice.buyer_snapshot?.email || '';
+    emailForm.subject = `${props.invoice.type === 'credit_note' ? 'Avoir' : 'Facture'} ${props.invoice.number}`;
+    emailForm.message = '';
+    emailForm.send_copy_to_self = false;
+    showEmailModal.value = true;
+};
+
+const sendEmail = () => {
+    emailForm.post(route('invoices.send-email', props.invoice.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showEmailModal.value = false;
+            emailForm.reset();
+        },
+    });
+};
+
+const openReminderModal = (level = 1) => {
+    reminderLevel.value = level;
+    reminderForm.level = level;
+    reminderForm.recipient_email = props.invoice.buyer_snapshot?.email || '';
+
+    // Set default subject and message based on level
+    const clientName = props.invoice.buyer_snapshot?.name || 'Client';
+    const amount = formatCurrency(props.invoice.total_ttc, props.invoice.currency);
+    const dueDate = formatDate(props.invoice.due_at);
+    const companyName = props.invoice.seller_snapshot?.company_name || '';
+
+    if (level === 1) {
+        reminderForm.subject = `Rappel : Facture ${props.invoice.number} en attente de paiement`;
+        reminderForm.message = `Bonjour ${clientName},\n\nNous nous permettons de vous rappeler que la facture ${props.invoice.number} d'un montant de ${amount} est arrivée à échéance le ${dueDate}.\n\nNous vous remercions de bien vouloir procéder au règlement dans les meilleurs délais.\n\nCordialement,\n${companyName}`;
+    } else if (level === 2) {
+        reminderForm.subject = `Relance : Facture ${props.invoice.number} impayée`;
+        reminderForm.message = `Bonjour ${clientName},\n\nMalgré notre précédent rappel, nous constatons que la facture ${props.invoice.number} d'un montant de ${amount} reste impayée.\n\nLe retard de paiement est actuellement de ${daysOverdue.value} jours.\n\nNous vous prions de régulariser cette situation dans les plus brefs délais.\n\nCordialement,\n${companyName}`;
+    } else {
+        reminderForm.subject = `Mise en demeure : Facture ${props.invoice.number}`;
+        reminderForm.message = `Bonjour ${clientName},\n\nMalgré nos relances précédentes, la facture ${props.invoice.number} d'un montant de ${amount} demeure impayée depuis ${daysOverdue.value} jours.\n\nSans règlement de votre part sous 8 jours, nous nous verrons contraints d'engager les procédures de recouvrement appropriées.\n\nCordialement,\n${companyName}`;
+    }
+
+    showReminderModal.value = true;
+};
+
+const sendReminder = () => {
+    reminderForm.post(route('invoices.send-reminder', props.invoice.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            showReminderModal.value = false;
+            reminderForm.reset();
+        },
+    });
+};
+
+const loadEmailHistory = async () => {
+    loadingHistory.value = true;
+    try {
+        const response = await axios.get(route('invoices.emails', props.invoice.id));
+        emailHistory.value = response.data.emails;
+    } catch (error) {
+        console.error('Error loading email history:', error);
+    } finally {
+        loadingHistory.value = false;
+    }
+};
+
+const openEmailHistory = () => {
+    showEmailHistory.value = true;
+    loadEmailHistory();
+};
+
+const toggleReminders = () => {
+    router.post(route('invoices.toggle-reminders', props.invoice.id), {}, {
+        preserveScroll: true,
+    });
+};
+
 const creditNoteReasons = computed(() => ({
     billing_error: t('billing_error'),
     return: t('return_merchandise'),
@@ -251,6 +371,47 @@ const submitCreditNote = () => {
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                         </svg>
                         {{ t('mark_as_paid') }}
+                    </button>
+
+                    <!-- Send Email Button -->
+                    <button
+                        v-if="canSendEmail"
+                        @click="openEmailModal"
+                        :disabled="processing"
+                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+                    >
+                        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                            <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                        </svg>
+                        {{ t('send_by_email') }}
+                    </button>
+
+                    <!-- Reminder Dropdown -->
+                    <div v-if="canSendReminder && isOverdue" class="relative inline-block text-left">
+                        <button
+                            type="button"
+                            @click="openReminderModal(1)"
+                            class="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500"
+                        >
+                            <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 00.515 1.076 32.91 32.91 0 003.256.508 3.5 3.5 0 006.972 0 32.903 32.903 0 003.256-.508.75.75 0 00.515-1.076A11.448 11.448 0 0116 8a6 6 0 00-6-6zM8.05 14.943a33.54 33.54 0 003.9 0 2 2 0 01-3.9 0z" clip-rule="evenodd" />
+                            </svg>
+                            {{ t('send_reminder') }}
+                        </button>
+                    </div>
+
+                    <!-- Email History Button -->
+                    <button
+                        v-if="canSendEmail"
+                        @click="openEmailHistory"
+                        type="button"
+                        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        :title="t('email_history')"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
+                        </svg>
                     </button>
 
                     <!-- Create Credit Note -->
@@ -674,6 +835,319 @@ const submitCreditNote = () => {
                             type="button"
                             @click="showPreviewModal = false"
                             class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500"
+                        >
+                            {{ t('close') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Modal -->
+        <div v-if="showEmailModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showEmailModal = false"></div>
+
+                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+                    <form @submit.prevent="sendEmail">
+                        <div class="px-4 pt-5 pb-4 sm:p-6">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
+                                {{ t('send_invoice_by_email') }}
+                            </h3>
+
+                            <!-- Recipient Email -->
+                            <div class="mb-4">
+                                <label for="recipient_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('recipient_email') }} *
+                                </label>
+                                <input
+                                    type="email"
+                                    id="recipient_email"
+                                    v-model="emailForm.recipient_email"
+                                    required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                                <p v-if="emailForm.errors.recipient_email" class="mt-1 text-sm text-red-600">
+                                    {{ emailForm.errors.recipient_email }}
+                                </p>
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="mb-4">
+                                <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('subject') }} *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="subject"
+                                    v-model="emailForm.subject"
+                                    required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                                <p v-if="emailForm.errors.subject" class="mt-1 text-sm text-red-600">
+                                    {{ emailForm.errors.subject }}
+                                </p>
+                            </div>
+
+                            <!-- Message -->
+                            <div class="mb-4">
+                                <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('custom_message') }}
+                                </label>
+                                <textarea
+                                    id="message"
+                                    v-model="emailForm.message"
+                                    rows="4"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    :placeholder="t('leave_empty_for_default')"
+                                ></textarea>
+                                <p v-if="emailForm.errors.message" class="mt-1 text-sm text-red-600">
+                                    {{ emailForm.errors.message }}
+                                </p>
+                            </div>
+
+                            <!-- Send copy to self -->
+                            <div class="mb-4">
+                                <label class="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        v-model="emailForm.send_copy_to_self"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                        {{ t('send_copy_to_self') }}
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
+                                <p class="text-sm text-blue-700 dark:text-blue-300">
+                                    {{ t('invoice_pdf_attached') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button
+                                type="submit"
+                                :disabled="emailForm.processing"
+                                class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 sm:ml-3 sm:w-auto"
+                            >
+                                <svg v-if="emailForm.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                {{ emailForm.processing ? t('sending') : t('send') }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="showEmailModal = false"
+                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500 sm:mt-0 sm:w-auto"
+                            >
+                                {{ t('cancel') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reminder Modal -->
+        <div v-if="showReminderModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showReminderModal = false"></div>
+
+                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+                    <form @submit.prevent="sendReminder">
+                        <div class="px-4 pt-5 pb-4 sm:p-6">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
+                                {{ t('send_payment_reminder') }}
+                            </h3>
+
+                            <!-- Reminder Level -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {{ t('reminder_level') }}
+                                </label>
+                                <div class="flex space-x-2">
+                                    <button
+                                        type="button"
+                                        @click="openReminderModal(1)"
+                                        :class="reminderLevel === 1 ? 'bg-orange-100 border-orange-500 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'"
+                                        class="flex-1 py-2 px-3 rounded-md border text-sm font-medium"
+                                    >
+                                        {{ t('level') }} 1 - {{ t('reminder') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="openReminderModal(2)"
+                                        :class="reminderLevel === 2 ? 'bg-orange-100 border-orange-500 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'"
+                                        class="flex-1 py-2 px-3 rounded-md border text-sm font-medium"
+                                    >
+                                        {{ t('level') }} 2 - {{ t('follow_up') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="openReminderModal(3)"
+                                        :class="reminderLevel === 3 ? 'bg-red-100 border-red-500 text-red-700 dark:bg-red-900/30 dark:text-red-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'"
+                                        class="flex-1 py-2 px-3 rounded-md border text-sm font-medium"
+                                    >
+                                        {{ t('level') }} 3 - {{ t('formal_notice') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Overdue Info -->
+                            <div class="mb-4 bg-orange-50 dark:bg-orange-900/20 rounded-md p-3">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-orange-600 dark:text-orange-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm font-medium text-orange-700 dark:text-orange-300">
+                                        {{ t('payment_overdue_by').replace(':days', daysOverdue) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Recipient Email -->
+                            <div class="mb-4">
+                                <label for="reminder_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('recipient_email') }} *
+                                </label>
+                                <input
+                                    type="email"
+                                    id="reminder_email"
+                                    v-model="reminderForm.recipient_email"
+                                    required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="mb-4">
+                                <label for="reminder_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('subject') }} *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="reminder_subject"
+                                    v-model="reminderForm.subject"
+                                    required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                />
+                            </div>
+
+                            <!-- Message -->
+                            <div class="mb-4">
+                                <label for="reminder_message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    {{ t('message') }} *
+                                </label>
+                                <textarea
+                                    id="reminder_message"
+                                    v-model="reminderForm.message"
+                                    rows="6"
+                                    required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                ></textarea>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-md p-3">
+                                <p class="text-sm text-blue-700 dark:text-blue-300">
+                                    {{ t('invoice_pdf_attached') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button
+                                type="submit"
+                                :disabled="reminderForm.processing"
+                                class="inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 disabled:opacity-50 sm:ml-3 sm:w-auto"
+                            >
+                                <svg v-if="reminderForm.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                {{ reminderForm.processing ? t('sending') : t('send_reminder') }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="showReminderModal = false"
+                                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500 sm:mt-0 sm:w-auto"
+                            >
+                                {{ t('cancel') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email History Modal -->
+        <div v-if="showEmailHistory" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showEmailHistory = false"></div>
+
+                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">
+                            {{ t('email_history') }}
+                        </h3>
+
+                        <div v-if="loadingHistory" class="flex items-center justify-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                        </div>
+
+                        <div v-else-if="emailHistory.length === 0" class="text-center py-8">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                {{ t('no_emails_sent') }}
+                            </p>
+                        </div>
+
+                        <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+                            <div
+                                v-for="email in emailHistory"
+                                :key="email.id"
+                                class="border rounded-lg p-3 dark:border-gray-600"
+                                :class="email.status === 'failed' ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-600'"
+                            >
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                                        :class="email.is_reminder ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'"
+                                    >
+                                        {{ email.type_label }}
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ email.sent_at }}
+                                    </span>
+                                </div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {{ email.subject }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {{ t('to') }}: {{ email.recipient_email }}
+                                </p>
+                                <div v-if="email.status === 'failed'" class="mt-2 flex items-center text-xs text-red-600 dark:text-red-400">
+                                    <svg class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ t('sending_failed') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button
+                            type="button"
+                            @click="showEmailHistory = false"
+                            class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500 sm:w-auto"
                         >
                             {{ t('close') }}
                         </button>

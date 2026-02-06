@@ -6,6 +6,7 @@ use App\Models\BusinessSettings;
 use App\Models\Quote;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 
 class QuotePdfService
@@ -27,9 +28,9 @@ class QuotePdfService
     /**
      * Generate PDF preview as HTML.
      */
-    public function preview(Quote $quote): string
+    public function preview(Quote $quote, ?string $localeOverride = null): string
     {
-        $data = $this->prepareData($quote);
+        $data = $this->prepareData($quote, $localeOverride);
 
         return view('pdf.quote', $data)->render();
     }
@@ -37,9 +38,9 @@ class QuotePdfService
     /**
      * Stream PDF for download.
      */
-    public function stream(Quote $quote): Response
+    public function stream(Quote $quote, ?string $localeOverride = null): Response
     {
-        $pdf = $this->createPdf($quote);
+        $pdf = $this->createPdf($quote, $localeOverride);
         $filename = $this->getFilename($quote);
 
         return $pdf->stream($filename);
@@ -48,9 +49,9 @@ class QuotePdfService
     /**
      * Download PDF.
      */
-    public function download(Quote $quote): Response
+    public function download(Quote $quote, ?string $localeOverride = null): Response
     {
-        $pdf = $this->createPdf($quote);
+        $pdf = $this->createPdf($quote, $localeOverride);
         $filename = $this->getFilename($quote);
 
         return $pdf->download($filename);
@@ -59,17 +60,17 @@ class QuotePdfService
     /**
      * Get PDF content as string.
      */
-    public function getContent(Quote $quote): string
+    public function getContent(Quote $quote, ?string $localeOverride = null): string
     {
-        return $this->createPdf($quote)->output();
+        return $this->createPdf($quote, $localeOverride)->output();
     }
 
     /**
      * Create PDF instance.
      */
-    protected function createPdf(Quote $quote): \Barryvdh\DomPDF\PDF
+    protected function createPdf(Quote $quote, ?string $localeOverride = null): \Barryvdh\DomPDF\PDF
     {
-        $data = $this->prepareData($quote);
+        $data = $this->prepareData($quote, $localeOverride);
 
         return Pdf::loadView('pdf.quote', $data)
             ->setPaper('a4')
@@ -82,8 +83,11 @@ class QuotePdfService
 
     /**
      * Prepare data for PDF template.
+     *
+     * @param Quote $quote
+     * @param string|null $localeOverride Optional locale to override client's preference
      */
-    public function prepareData(Quote $quote): array
+    public function prepareData(Quote $quote, ?string $localeOverride = null): array
     {
         $quote->load(['items', 'client']);
 
@@ -127,8 +131,13 @@ class QuotePdfService
                 'vat_number' => $client->vat_number,
                 'registration_number' => $client->registration_number,
                 'email' => $client->email,
+                'locale' => $client->locale ?? 'fr',
             ] : [];
         }
+
+        // Set locale based on override or client's preference
+        $locale = $localeOverride ?? $buyer['locale'] ?? 'fr';
+        $this->setLocale($locale);
 
         // Determine if VAT exempt (franchise regime)
         $isVatExempt = ($seller['vat_regime'] ?? '') === 'franchise';
@@ -164,7 +173,20 @@ class QuotePdfService
             'vatSummary' => $vatSummary,
             'logoPath' => $logoPath,
             'showBranding' => $showBranding,
+            'locale' => $locale,
         ];
+    }
+
+    /**
+     * Set application locale for PDF generation.
+     */
+    protected function setLocale(string $locale): void
+    {
+        $supportedLocales = ['fr', 'de', 'en', 'lb'];
+
+        if (in_array($locale, $supportedLocales)) {
+            App::setLocale($locale);
+        }
     }
 
     /**

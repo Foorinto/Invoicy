@@ -6,7 +6,9 @@ import TextInput from '@/Components/TextInput.vue';
 import VatScenarioIndicator from '@/Components/VatScenarioIndicator.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
 
+const { t } = useTranslations();
 const page = usePage();
 
 const props = defineProps({
@@ -28,7 +30,7 @@ const props = defineProps({
     },
     submitLabel: {
         type: String,
-        default: 'Enregistrer',
+        default: null,
     },
     cancelRoute: {
         type: String,
@@ -62,8 +64,8 @@ const vatScenario = computed(() => {
     if (props.sellerVatRegime === 'franchise') {
         return {
             key: 'FRANCHISE',
-            label: 'Franchise de TVA',
-            description: 'Vous êtes exonéré de TVA (régime franchise)',
+            label: t('vat_scenario_franchise'),
+            description: t('vat_scenario_franchise_desc'),
             rate: 0,
             mention: 'franchise',
             color: 'gray',
@@ -77,8 +79,8 @@ const vatScenario = computed(() => {
     if (countryCode === 'LU') {
         return {
             key: type === 'b2b' ? 'B2B_LU' : 'B2C_LU',
-            label: type === 'b2b' ? 'B2B Luxembourg' : 'B2C Luxembourg',
-            description: 'Client luxembourgeois - TVA à 17%',
+            label: type === 'b2b' ? t('vat_scenario_b2b_lu') : t('vat_scenario_b2c_lu'),
+            description: t('vat_scenario_lu_desc'),
             rate: 17,
             mention: null,
             color: 'green',
@@ -90,8 +92,8 @@ const vatScenario = computed(() => {
         if (type === 'b2b' && hasVatNumber.value) {
             return {
                 key: 'B2B_INTRA_EU',
-                label: 'B2B Intracommunautaire',
-                description: 'Autoliquidation - TVA 0%',
+                label: t('vat_scenario_b2b_intra'),
+                description: t('vat_scenario_b2b_intra_desc'),
                 rate: 0,
                 mention: 'reverse_charge',
                 color: 'blue',
@@ -100,8 +102,8 @@ const vatScenario = computed(() => {
         // B2B without VAT or B2C = Luxembourg VAT applies
         return {
             key: type === 'b2b' ? 'B2B_LU' : 'B2C_LU',
-            label: type === 'b2b' ? 'B2B UE (sans TVA)' : 'B2C UE',
-            description: 'TVA Luxembourg applicable (17%)',
+            label: type === 'b2b' ? t('vat_scenario_b2b_eu_no_vat') : t('vat_scenario_b2c_eu'),
+            description: t('vat_scenario_eu_desc'),
             rate: 17,
             mention: null,
             color: 'yellow',
@@ -111,8 +113,8 @@ const vatScenario = computed(() => {
     // Non-EU client = export
     return {
         key: 'EXPORT',
-        label: 'Export hors UE',
-        description: 'Exonération - TVA 0%',
+        label: t('vat_scenario_export'),
+        description: t('vat_scenario_export_desc'),
         rate: 0,
         mention: 'export',
         color: 'purple',
@@ -141,7 +143,7 @@ const submit = () => {
         <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                    Type de client
+                    {{ t('client_type') }}
                 </h2>
             </div>
             <div class="px-6 py-4">
@@ -180,13 +182,13 @@ const submit = () => {
         <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                    Informations du client
+                    {{ t('client_info') }}
                 </h2>
             </div>
             <div class="px-6 py-4 space-y-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <InputLabel for="name" :value="isB2B ? 'Raison sociale' : 'Nom complet'" />
+                        <InputLabel for="name" :value="isB2B ? t('company_name') : t('full_name')" />
                         <TextInput
                             id="name"
                             v-model="form.name"
@@ -199,7 +201,7 @@ const submit = () => {
                     </div>
 
                     <div v-if="isB2B">
-                        <InputLabel for="contact_name" value="Nom du dirigeant / contact (optionnel)" />
+                        <InputLabel for="contact_name" :value="`${t('director_contact')} (${t('optional')})`" />
                         <TextInput
                             id="contact_name"
                             v-model="form.contact_name"
@@ -211,7 +213,7 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <InputLabel for="email" value="Email" />
+                        <InputLabel for="email" :value="t('email')" />
                         <TextInput
                             id="email"
                             v-model="form.email"
@@ -225,7 +227,7 @@ const submit = () => {
                 </div>
 
                 <div>
-                    <InputLabel for="address" value="Adresse" />
+                    <InputLabel for="address" :value="t('address')" />
                     <textarea
                         id="address"
                         v-model="form.address"
@@ -238,7 +240,7 @@ const submit = () => {
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
-                        <InputLabel for="postal_code" value="Code postal" />
+                        <InputLabel for="postal_code" :value="t('postal_code')" />
                         <TextInput
                             id="postal_code"
                             v-model="form.postal_code"
@@ -250,7 +252,7 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <InputLabel for="city" value="Ville" />
+                        <InputLabel for="city" :value="t('city')" />
                         <TextInput
                             id="city"
                             v-model="form.city"
@@ -262,7 +264,7 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <InputLabel for="country_code" value="Pays" />
+                        <InputLabel for="country_code" :value="t('country')" />
                         <select
                             id="country_code"
                             v-model="form.country_code"
@@ -279,7 +281,7 @@ const submit = () => {
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <InputLabel for="phone" value="Téléphone (optionnel)" />
+                        <InputLabel for="phone" :value="`${t('phone')} (${t('optional')})`" />
                         <TextInput
                             id="phone"
                             v-model="form.phone"
@@ -292,10 +294,10 @@ const submit = () => {
 
                     <div>
                         <InputLabel for="vat_number">
-                            N° TVA intracommunautaire
-                            <span v-if="isB2B && isIntraEu" class="text-amber-600 text-xs font-medium">(requis pour autoliquidation)</span>
-                            <span v-else-if="isB2B" class="text-gray-400 text-xs">(recommandé pour B2B)</span>
-                            <span v-else class="text-gray-400 text-xs">(optionnel)</span>
+                            {{ t('vat_number') }}
+                            <span v-if="isB2B && isIntraEu" class="text-amber-600 text-xs font-medium">({{ t('vat_required_for_reverse_charge') }})</span>
+                            <span v-else-if="isB2B" class="text-gray-400 text-xs">({{ t('vat_recommended_b2b') }})</span>
+                            <span v-else class="text-gray-400 text-xs">({{ t('optional') }})</span>
                         </InputLabel>
                         <TextInput
                             id="vat_number"
@@ -318,7 +320,7 @@ const submit = () => {
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="text-sm font-medium text-gray-900 dark:text-white">
-                                Scénario TVA détecté
+                                {{ t('vat_scenario_detected') }}
                             </h4>
                             <VatScenarioIndicator :scenario="vatScenario" size="sm" class="mt-2" />
                         </div>
@@ -328,20 +330,20 @@ const submit = () => {
                             ]">
                                 {{ vatScenario.rate }}%
                             </span>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Taux TVA</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('vat_rate') }}</p>
                         </div>
                     </div>
                     <p v-if="showVatWarning" class="mt-3 text-sm text-amber-600 dark:text-amber-400">
                         <svg class="inline h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                         </svg>
-                        Sans numéro de TVA valide, la TVA luxembourgeoise (17%) sera appliquée.
+                        {{ t('vat_warning_no_number') }}
                     </p>
                 </div>
 
                 <div v-if="isB2B" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <InputLabel for="registration_number" value="N° d'identification (RCS / SIRET) (optionnel)" />
+                        <InputLabel for="registration_number" :value="`${t('registration_number')} (${t('optional')})`" />
                         <TextInput
                             id="registration_number"
                             v-model="form.registration_number"
@@ -359,13 +361,13 @@ const submit = () => {
         <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                    Paramètres de facturation
+                    {{ t('billing_settings') }}
                 </h2>
             </div>
             <div class="px-6 py-4 space-y-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <InputLabel for="currency" value="Devise par défaut" />
+                        <InputLabel for="currency" :value="t('default_currency')" />
                         <select
                             id="currency"
                             v-model="form.currency"
@@ -380,7 +382,7 @@ const submit = () => {
                     </div>
 
                     <div>
-                        <InputLabel for="locale" value="Langue des documents" />
+                        <InputLabel for="locale" :value="t('document_language')" />
                         <select
                             id="locale"
                             v-model="form.locale"
@@ -391,23 +393,23 @@ const submit = () => {
                             </option>
                         </select>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Langue utilisée sur les factures et devis pour ce client.
+                            {{ t('document_language_help') }}
                         </p>
                         <InputError :message="form.errors.locale" class="mt-2" />
                     </div>
                 </div>
 
                 <div>
-                    <InputLabel for="notes" value="Notes internes (optionnel)" />
+                    <InputLabel for="notes" :value="`${t('internal_notes')} (${t('optional')})`" />
                     <textarea
                         id="notes"
                         v-model="form.notes"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         rows="3"
-                        placeholder="Notes internes sur ce client..."
+                        :placeholder="t('internal_notes')"
                     ></textarea>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Ces notes ne seront pas visibles sur les factures.
+                        {{ t('notes_not_visible') }}
                     </p>
                     <InputError :message="form.errors.notes" class="mt-2" />
                 </div>
@@ -420,14 +422,14 @@ const submit = () => {
                 :href="cancelRouteParams ? route(cancelRoute, cancelRouteParams) : route(cancelRoute)"
                 class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             >
-                Annuler
+                {{ t('cancel') }}
             </Link>
             <PrimaryButton
                 :disabled="form.processing"
                 :class="{ 'opacity-25': form.processing }"
             >
-                <span v-if="form.processing">Enregistrement...</span>
-                <span v-else>{{ submitLabel }}</span>
+                <span v-if="form.processing">{{ t('saving') }}</span>
+                <span v-else>{{ submitLabel || t('save') }}</span>
             </PrimaryButton>
         </div>
     </form>

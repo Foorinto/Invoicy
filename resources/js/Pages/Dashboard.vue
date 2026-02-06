@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     kpis: Object,
@@ -71,28 +74,22 @@ const getStatusBadge = (status) => {
 };
 
 const getStatusLabel = (status) => {
-    const labels = {
-        draft: 'Brouillon',
-        finalized: 'Finalisée',
-        sent: 'Envoyée',
-        paid: 'Payée',
-    };
-    return labels[status] || status;
+    return t(status) || status;
 };
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="t('dashboard')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Dashboard
+                    {{ t('dashboard') }}
                 </h1>
                 <!-- Year Selector -->
                 <div class="flex items-center space-x-2">
-                    <label for="year" class="text-sm font-medium text-gray-700 dark:text-gray-300">Année :</label>
+                    <label for="year" class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('year') }} :</label>
                     <select
                         id="year"
                         v-model="selectedYear"
@@ -144,7 +141,7 @@ const getStatusLabel = (status) => {
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    CA Annuel (HT)
+                                    {{ t('annual_revenue') }}
                                 </dt>
                                 <dd class="flex items-baseline">
                                     <span class="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -180,7 +177,7 @@ const getStatusLabel = (status) => {
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Bénéfice Net
+                                    {{ t('net_profit') }}
                                 </dt>
                                 <dd class="flex items-baseline">
                                     <span :class="[
@@ -225,16 +222,16 @@ const getStatusLabel = (status) => {
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Factures impayées
+                                    {{ t('unpaid_invoices') }}
                                 </dt>
                                 <dd>
                                     <span class="text-2xl font-semibold text-gray-900 dark:text-white">
                                         {{ formatCurrency(kpis?.unpaid_invoices?.total_amount) }}
                                     </span>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ kpis?.unpaid_invoices?.count || 0 }} facture(s)
+                                        {{ kpis?.unpaid_invoices?.count || 0 }} {{ t('invoices').toLowerCase() }}
                                         <span v-if="kpis?.unpaid_invoices?.overdue_count > 0" class="text-red-600 dark:text-red-400">
-                                            ({{ kpis?.unpaid_invoices?.overdue_count }} en retard)
+                                            ({{ kpis?.unpaid_invoices?.overdue_count }} {{ t('overdue').toLowerCase() }})
                                         </span>
                                     </p>
                                 </dd>
@@ -258,14 +255,14 @@ const getStatusLabel = (status) => {
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Temps non facturé
+                                    {{ t('unbilled_time') }}
                                 </dt>
                                 <dd>
                                     <span class="text-2xl font-semibold text-gray-900 dark:text-white">
                                         {{ kpis?.unbilled_time?.formatted || '0:00' }}
                                     </span>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ kpis?.unbilled_time?.hours?.toFixed(1) || 0 }} heures
+                                        {{ kpis?.unbilled_time?.hours?.toFixed(1) || 0 }} {{ t('hours') }}
                                     </p>
                                 </dd>
                             </dl>
@@ -281,10 +278,10 @@ const getStatusLabel = (status) => {
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="p-6">
                     <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                        Seuil de franchise TVA
+                        {{ t('vat_franchise_threshold') }}
                     </h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Article 57 - Seuil de {{ formatCurrency(kpis?.vat_franchise_threshold) }}
+                        {{ t('article_57_threshold') }} {{ formatCurrency(kpis?.vat_franchise_threshold) }}
                     </p>
                     <div class="mt-4">
                         <div class="flex items-center justify-between text-sm">
@@ -302,10 +299,10 @@ const getStatusLabel = (status) => {
                             ></div>
                         </div>
                         <p v-if="kpis?.vat_franchise_progress?.remaining > 0" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            Reste {{ formatCurrency(kpis?.vat_franchise_progress?.remaining) }} avant le seuil
+                            {{ t('remaining_before_threshold', { amount: formatCurrency(kpis?.vat_franchise_progress?.remaining) }) }}
                         </p>
                         <p v-else class="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
-                            Seuil dépassé - Assujettissement TVA obligatoire
+                            {{ t('threshold_exceeded_vat') }}
                         </p>
                     </div>
                 </div>
@@ -315,10 +312,10 @@ const getStatusLabel = (status) => {
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="p-6">
                     <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                        Seuil de comptabilité simplifiée
+                        {{ t('simplified_accounting_threshold') }}
                     </h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Seuil de {{ formatCurrency(kpis?.simplified_accounting_threshold) }}
+                        {{ t('article_57_threshold') }} {{ formatCurrency(kpis?.simplified_accounting_threshold) }}
                     </p>
                     <div class="mt-4">
                         <div class="flex items-center justify-between text-sm">
@@ -336,10 +333,10 @@ const getStatusLabel = (status) => {
                             ></div>
                         </div>
                         <p v-if="kpis?.simplified_accounting_progress?.remaining > 0" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            Reste {{ formatCurrency(kpis?.simplified_accounting_progress?.remaining) }} avant le seuil
+                            {{ t('remaining_before_threshold', { amount: formatCurrency(kpis?.simplified_accounting_progress?.remaining) }) }}
                         </p>
                         <p v-else class="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
-                            Seuil dépassé - Comptabilité complète obligatoire
+                            {{ t('threshold_exceeded_accounting') }}
                         </p>
                     </div>
                 </div>
@@ -352,7 +349,7 @@ const getStatusLabel = (status) => {
             <div class="lg:col-span-2 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="p-6">
                     <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                        Chiffre d'affaires mensuel
+                        {{ t('monthly_revenue') }}
                     </h3>
                     <div class="mt-4">
                         <div class="flex h-48 items-end justify-between space-x-2">
@@ -377,23 +374,23 @@ const getStatusLabel = (status) => {
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="p-6">
                     <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                        Résumé TVA {{ selectedYear }}
+                        {{ t('vat_summary', { year: selectedYear }) }}
                     </h3>
                     <dl class="mt-4 space-y-4">
                         <div class="flex justify-between">
-                            <dt class="text-sm text-gray-500 dark:text-gray-400">TVA collectée</dt>
+                            <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('collected_vat') }}</dt>
                             <dd class="text-sm font-medium text-gray-900 dark:text-white">
                                 {{ formatCurrency(kpis?.vat_summary?.collected) }}
                             </dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-sm text-gray-500 dark:text-gray-400">TVA déductible</dt>
+                            <dt class="text-sm text-gray-500 dark:text-gray-400">{{ t('deductible_vat') }}</dt>
                             <dd class="text-sm font-medium text-gray-900 dark:text-white">
                                 {{ formatCurrency(kpis?.vat_summary?.deductible) }}
                             </dd>
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-                            <dt class="text-sm font-medium text-gray-900 dark:text-white">Solde</dt>
+                            <dt class="text-sm font-medium text-gray-900 dark:text-white">{{ t('balance') }}</dt>
                             <dd :class="[
                                 'text-sm font-semibold',
                                 kpis?.vat_summary?.balance >= 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
@@ -402,10 +399,10 @@ const getStatusLabel = (status) => {
                             </dd>
                         </div>
                         <div v-if="kpis?.vat_summary?.to_pay > 0" class="text-sm text-gray-500 dark:text-gray-400">
-                            TVA à reverser : <span class="font-medium text-red-600 dark:text-red-400">{{ formatCurrency(kpis?.vat_summary?.to_pay) }}</span>
+                            {{ t('vat_to_pay') }} <span class="font-medium text-red-600 dark:text-red-400">{{ formatCurrency(kpis?.vat_summary?.to_pay) }}</span>
                         </div>
                         <div v-else-if="kpis?.vat_summary?.credit > 0" class="text-sm text-gray-500 dark:text-gray-400">
-                            Crédit de TVA : <span class="font-medium text-green-600 dark:text-green-400">{{ formatCurrency(kpis?.vat_summary?.credit) }}</span>
+                            {{ t('vat_credit') }} <span class="font-medium text-green-600 dark:text-green-400">{{ formatCurrency(kpis?.vat_summary?.credit) }}</span>
                         </div>
                     </dl>
                 </div>
@@ -419,15 +416,15 @@ const getStatusLabel = (status) => {
                 <div class="p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                            Factures impayées
+                            {{ t('unpaid_invoices') }}
                         </h3>
                         <Link :href="route('invoices.index')" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                            Voir tout
+                            {{ t('view_all') }}
                         </Link>
                     </div>
                     <div class="mt-4">
                         <div v-if="unpaidInvoices?.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                            Aucune facture impayée
+                            {{ t('no_unpaid_invoices') }}
                         </div>
                         <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
                             <li v-for="invoice in unpaidInvoices" :key="invoice.id" class="py-3">
@@ -445,10 +442,10 @@ const getStatusLabel = (status) => {
                                             invoice.is_overdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400'
                                         ]">
                                             <span v-if="invoice.is_overdue">
-                                                En retard ({{ invoice.days_overdue }} j)
+                                                {{ t('overdue') }} ({{ invoice.days_overdue }} {{ t('days_short') }})
                                             </span>
                                             <span v-else-if="invoice.due_at">
-                                                Échéance : {{ invoice.due_at }}
+                                                {{ t('due_date') }} : {{ invoice.due_at }}
                                             </span>
                                         </p>
                                     </div>
@@ -464,15 +461,15 @@ const getStatusLabel = (status) => {
                 <div class="p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                            Temps non facturé par client
+                            {{ t('unbilled_time_by_client') }}
                         </h3>
                         <Link :href="route('time-entries.summary')" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                            Voir tout
+                            {{ t('view_all') }}
                         </Link>
                     </div>
                     <div class="mt-4">
                         <div v-if="unbilledTimeByClient?.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                            Aucun temps non facturé
+                            {{ t('no_unbilled_time') }}
                         </div>
                         <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
                             <li v-for="entry in unbilledTimeByClient" :key="entry.client_id" class="py-3">
@@ -502,25 +499,25 @@ const getStatusLabel = (status) => {
             <div class="p-6">
                 <div class="flex items-center justify-between">
                     <h3 class="text-base font-medium text-gray-900 dark:text-white">
-                        Factures récentes
+                        {{ t('recent_invoices') }}
                     </h3>
                     <Link :href="route('invoices.index')" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
-                        Voir tout
+                        {{ t('view_all') }}
                     </Link>
                 </div>
                 <div class="mt-4">
                     <div v-if="recentInvoices?.length === 0" class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                        Aucune facture
+                        {{ t('no_invoice') }}
                     </div>
                     <div v-else class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead>
                                 <tr>
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Numéro</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Client</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Date</th>
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Statut</th>
-                                    <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Montant</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('number') }}</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('client') }}</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('date') }}</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('status') }}</th>
+                                    <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ t('amount') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -528,7 +525,7 @@ const getStatusLabel = (status) => {
                                     <td class="whitespace-nowrap px-3 py-3">
                                         <Link :href="route('invoices.show', invoice.id)" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                                             {{ invoice.number }}
-                                            <span v-if="invoice.is_credit_note" class="ml-1 text-xs text-gray-500">(Avoir)</span>
+                                            <span v-if="invoice.is_credit_note" class="ml-1 text-xs text-gray-500">({{ t('credit_note') }})</span>
                                         </Link>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-900 dark:text-white">
@@ -556,7 +553,7 @@ const getStatusLabel = (status) => {
         <!-- Quick Actions -->
         <div class="mt-6">
             <h3 class="text-base font-medium text-gray-900 dark:text-white mb-4">
-                Actions rapides
+                {{ t('quick_actions') }}
             </h3>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Link
@@ -568,7 +565,7 @@ const getStatusLabel = (status) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-                            Nouvelle facture
+                            {{ t('new_invoice') }}
                         </span>
                     </div>
                 </Link>
@@ -582,7 +579,7 @@ const getStatusLabel = (status) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
                         <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-                            Nouveau client
+                            {{ t('new_client') }}
                         </span>
                     </div>
                 </Link>
@@ -596,7 +593,7 @@ const getStatusLabel = (status) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-                            Suivi du temps
+                            {{ t('time_tracking') }}
                         </span>
                     </div>
                 </Link>
@@ -610,7 +607,7 @@ const getStatusLabel = (status) => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
                         <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-                            Nouvelle dépense
+                            {{ t('new_expense') }}
                         </span>
                     </div>
                 </Link>

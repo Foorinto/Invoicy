@@ -94,15 +94,15 @@ class Expense extends Model implements HasMedia
     public static function getCategories(): array
     {
         return [
-            self::CATEGORY_HARDWARE => 'Matériel informatique',
-            self::CATEGORY_SOFTWARE => 'Logiciels et licences',
-            self::CATEGORY_HOSTING => 'Hébergement et domaines',
-            self::CATEGORY_OFFICE => 'Fournitures de bureau',
-            self::CATEGORY_TRAVEL => 'Déplacements professionnels',
-            self::CATEGORY_TRAINING => 'Formation',
-            self::CATEGORY_PROFESSIONAL_SERVICES => 'Services professionnels',
-            self::CATEGORY_TELECOMMUNICATIONS => 'Téléphone et internet',
-            self::CATEGORY_OTHER => 'Autres',
+            self::CATEGORY_HARDWARE => __('app.expense_categories.hardware'),
+            self::CATEGORY_SOFTWARE => __('app.expense_categories.software'),
+            self::CATEGORY_HOSTING => __('app.expense_categories.hosting'),
+            self::CATEGORY_OFFICE => __('app.expense_categories.office'),
+            self::CATEGORY_TRAVEL => __('app.expense_categories.travel'),
+            self::CATEGORY_TRAINING => __('app.expense_categories.training'),
+            self::CATEGORY_PROFESSIONAL_SERVICES => __('app.expense_categories.professional_services'),
+            self::CATEGORY_TELECOMMUNICATIONS => __('app.expense_categories.telecommunications'),
+            self::CATEGORY_OTHER => __('app.expense_categories.other'),
         ];
     }
 
@@ -112,10 +112,10 @@ class Expense extends Model implements HasMedia
     public static function getPaymentMethods(): array
     {
         return [
-            self::PAYMENT_CARD => 'Carte bancaire',
-            self::PAYMENT_TRANSFER => 'Virement',
-            self::PAYMENT_CASH => 'Espèces',
-            self::PAYMENT_CHECK => 'Chèque',
+            self::PAYMENT_CARD => __('app.payment_methods.card'),
+            self::PAYMENT_TRANSFER => __('app.payment_methods.transfer'),
+            self::PAYMENT_CASH => __('app.payment_methods.cash'),
+            self::PAYMENT_CHECK => __('app.payment_methods.check'),
         ];
     }
 

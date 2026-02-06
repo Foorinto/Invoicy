@@ -5,6 +5,9 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const form = useForm({
     name: '',
@@ -22,11 +25,11 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Inscription" />
+        <Head :title="t('register')" />
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Nom" />
+                <InputLabel for="name" :value="t('name')" />
 
                 <TextInput
                     id="name"
@@ -42,7 +45,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" :value="t('email')" />
 
                 <TextInput
                     id="email"
@@ -57,7 +60,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Mot de passe" />
+                <InputLabel for="password" :value="t('password')" />
 
                 <TextInput
                     id="password"
@@ -74,7 +77,7 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel
                     for="password_confirmation"
-                    value="Confirmer le mot de passe"
+                    :value="t('confirm_password')"
                 />
 
                 <TextInput
@@ -97,7 +100,7 @@ const submit = () => {
                     :href="route('login')"
                     class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
                 >
-                    Déjà inscrit ?
+                    {{ t('already_registered') }}
                 </Link>
 
                 <PrimaryButton
@@ -105,7 +108,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    S'inscrire
+                    {{ t('register') }}
                 </PrimaryButton>
             </div>
         </form>

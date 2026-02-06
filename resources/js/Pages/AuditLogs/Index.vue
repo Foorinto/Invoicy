@@ -3,6 +3,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     logs: Object,
@@ -70,13 +73,13 @@ watch(() => localFilters.value.search, () => {
 </script>
 
 <template>
-    <Head title="Journal d'activité" />
+    <Head :title="t('audit_logs')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Journal d'activité
+                    {{ t('audit_logs') }}
                 </h2>
                 <button
                     @click="exportCsv"
@@ -85,7 +88,7 @@ watch(() => localFilters.value.search, () => {
                     <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Exporter CSV
+                    {{ t('export_csv') }}
                 </button>
             </div>
         </template>
@@ -97,13 +100,13 @@ watch(() => localFilters.value.search, () => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
                         <!-- Category filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Catégorie</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('category') }}</label>
                             <select
                                 v-model="localFilters.category"
                                 @change="applyFilters"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
                             >
-                                <option value="">Toutes</option>
+                                <option value="">{{ t('all') }}</option>
                                 <option v-for="cat in categories" :key="cat.value" :value="cat.value">
                                     {{ cat.label }}
                                 </option>
@@ -112,7 +115,7 @@ watch(() => localFilters.value.search, () => {
 
                         <!-- Date from -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Du</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('from_date') }}</label>
                             <input
                                 type="date"
                                 v-model="localFilters.from"
@@ -123,7 +126,7 @@ watch(() => localFilters.value.search, () => {
 
                         <!-- Date to -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Au</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('to_date') }}</label>
                             <input
                                 type="date"
                                 v-model="localFilters.to"
@@ -134,25 +137,25 @@ watch(() => localFilters.value.search, () => {
 
                         <!-- Status filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Statut</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('status') }}</label>
                             <select
                                 v-model="localFilters.status"
                                 @change="applyFilters"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
                             >
-                                <option value="">Tous</option>
-                                <option value="success">Succès</option>
-                                <option value="failed">Échec</option>
+                                <option value="">{{ t('all') }}</option>
+                                <option value="success">{{ t('success') }}</option>
+                                <option value="failed">{{ t('failed') }}</option>
                             </select>
                         </div>
 
                         <!-- Search -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rechercher</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('search') }}</label>
                             <input
                                 type="text"
                                 v-model="localFilters.search"
-                                placeholder="Action, IP..."
+                                :placeholder="t('search_placeholder')"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
                             />
                         </div>
@@ -163,7 +166,7 @@ watch(() => localFilters.value.search, () => {
                             @click="resetFilters"
                             class="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                         >
-                            Réinitialiser les filtres
+                            {{ t('reset_filters') }}
                         </button>
                     </div>
                 </div>
@@ -174,22 +177,22 @@ watch(() => localFilters.value.search, () => {
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                                    Date/Heure
+                                    {{ t('date_time') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                                    Action
+                                    {{ t('action') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                                    Ressource
+                                    {{ t('resource') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                                    Statut
+                                    {{ t('status') }}
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                                     IP
                                 </th>
                                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                                    Actions
+                                    {{ t('actions') }}
                                 </th>
                             </tr>
                         </thead>
@@ -218,7 +221,7 @@ watch(() => localFilters.value.search, () => {
                                         :class="getStatusBadgeClass(log.status)"
                                         class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
                                     >
-                                        {{ log.status === 'success' ? 'Succès' : 'Échec' }}
+                                        {{ log.status === 'success' ? t('success') : t('failed') }}
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -229,13 +232,13 @@ watch(() => localFilters.value.search, () => {
                                         @click="viewDetail(log)"
                                         class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                     >
-                                        Détails
+                                        {{ t('details') }}
                                     </button>
                                 </td>
                             </tr>
                             <tr v-if="logs.data.length === 0">
                                 <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                    Aucune entrée dans le journal d'activité.
+                                    {{ t('no_audit_entries') }}
                                 </td>
                             </tr>
                         </tbody>
@@ -274,20 +277,20 @@ watch(() => localFilters.value.search, () => {
                         <div class="mt-4 space-y-4">
                             <div class="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span class="font-medium text-gray-500 dark:text-gray-400">Date :</span>
+                                    <span class="font-medium text-gray-500 dark:text-gray-400">{{ t('date') }} :</span>
                                     <span class="ml-2 text-gray-900 dark:text-gray-100">{{ selectedLog?.created_at }}</span>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-500 dark:text-gray-400">Statut :</span>
+                                    <span class="font-medium text-gray-500 dark:text-gray-400">{{ t('status') }} :</span>
                                     <span
                                         :class="getStatusBadgeClass(selectedLog?.status)"
                                         class="ml-2 inline-flex rounded-full px-2 text-xs font-semibold leading-5"
                                     >
-                                        {{ selectedLog?.status === 'success' ? 'Succès' : 'Échec' }}
+                                        {{ selectedLog?.status === 'success' ? t('success') : t('failed') }}
                                     </span>
                                 </div>
                                 <div v-if="selectedLog?.auditable_type">
-                                    <span class="font-medium text-gray-500 dark:text-gray-400">Ressource :</span>
+                                    <span class="font-medium text-gray-500 dark:text-gray-400">{{ t('resource') }} :</span>
                                     <span class="ml-2 text-gray-900 dark:text-gray-100">
                                         {{ selectedLog.auditable_type }} #{{ selectedLog.auditable_id }}
                                     </span>
@@ -300,14 +303,14 @@ watch(() => localFilters.value.search, () => {
 
                             <!-- Changes diff -->
                             <div v-if="selectedLog?.changed_fields && Object.keys(selectedLog.changed_fields).length > 0">
-                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">Modifications :</h4>
+                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">{{ t('changes') }} :</h4>
                                 <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                                         <thead class="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Champ</th>
-                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Avant</th>
-                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Après</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ t('field') }}</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ t('before') }}</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">{{ t('after') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
@@ -327,13 +330,13 @@ watch(() => localFilters.value.search, () => {
 
                             <!-- Metadata -->
                             <div v-if="selectedLog?.metadata && Object.keys(selectedLog.metadata).length > 0">
-                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">Métadonnées :</h4>
+                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">{{ t('metadata') }} :</h4>
                                 <pre class="overflow-auto rounded-lg bg-gray-100 p-3 text-xs dark:bg-gray-700">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
                             </div>
 
                             <!-- User agent -->
                             <div v-if="selectedLog?.user_agent">
-                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">Navigateur :</h4>
+                                <h4 class="mb-2 font-medium text-gray-900 dark:text-gray-100">{{ t('browser') }} :</h4>
                                 <p class="break-all text-sm text-gray-600 dark:text-gray-400">{{ selectedLog.user_agent }}</p>
                             </div>
                         </div>
@@ -344,7 +347,7 @@ watch(() => localFilters.value.search, () => {
                             @click="closeModal"
                             class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-600 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm"
                         >
-                            Fermer
+                            {{ t('close') }}
                         </button>
                     </div>
                 </div>

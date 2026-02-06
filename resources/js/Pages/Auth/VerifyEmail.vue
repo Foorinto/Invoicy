@@ -3,6 +3,9 @@ import { computed } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     status: {
@@ -23,21 +26,17 @@ const verificationLinkSent = computed(
 
 <template>
     <GuestLayout>
-        <Head title="Vérification de l'email" />
+        <Head :title="t('email_verification_title')" />
 
         <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Merci pour votre inscription ! Avant de commencer, veuillez vérifier
-            votre adresse email en cliquant sur le lien que nous venons de vous
-            envoyer. Si vous n'avez pas reçu l'email, nous vous en enverrons
-            volontiers un autre.
+            {{ t('email_verification_message') }}
         </div>
 
         <div
             class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
             v-if="verificationLinkSent"
         >
-            Un nouveau lien de vérification a été envoyé à l'adresse email
-            fournie lors de votre inscription.
+            {{ t('verification_link_sent') }}
         </div>
 
         <form @submit.prevent="submit">
@@ -46,7 +45,7 @@ const verificationLinkSent = computed(
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Renvoyer l'email de vérification
+                    {{ t('resend_verification_email') }}
                 </PrimaryButton>
 
                 <Link
@@ -54,8 +53,8 @@ const verificationLinkSent = computed(
                     method="post"
                     as="button"
                     class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                    >Se déconnecter</Link
-                >
+                >{{ t('logout') }}</Link>
+
             </div>
         </form>
     </GuestLayout>

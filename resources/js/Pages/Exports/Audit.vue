@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     exports: Array,
@@ -37,7 +40,7 @@ const fetchPreview = async () => {
         }));
 
         if (!response.ok) {
-            throw new Error('Erreur lors du chargement de l\'aperçu');
+            throw new Error(t('faia.preview_error'));
         }
 
         preview.value = await response.json();
@@ -110,7 +113,7 @@ const downloadExport = (exportItem) => {
 
 // Delete export
 const deleteExport = (exportItem) => {
-    if (confirm('Supprimer cet export ?')) {
+    if (confirm(t('faia.delete_confirm'))) {
         router.delete(route('exports.audit.destroy', exportItem.id));
     }
 };
@@ -119,24 +122,24 @@ const deleteExport = (exportItem) => {
 const getStatusBadge = (status) => {
     switch (status) {
         case 'completed':
-            return { class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Terminé' };
+            return { class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: t('faia.status_completed') };
         case 'processing':
-            return { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', text: 'En cours' };
+            return { class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', text: t('faia.status_processing') };
         case 'failed':
-            return { class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Échec' };
+            return { class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: t('faia.status_failed') };
         default:
-            return { class: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300', text: 'En attente' };
+            return { class: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300', text: t('faia.status_pending') };
     }
 };
 </script>
 
 <template>
-    <Head title="Export Audit FAIA" />
+    <Head :title="t('faia_audit_export')" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Export Audit FAIA
+                {{ t('faia_audit_export') }}
             </h1>
         </template>
 
@@ -146,14 +149,14 @@ const getStatusBadge = (status) => {
                     <!-- Export Form -->
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Nouvel export
+                            {{ t('faia.new_export') }}
                         </h2>
 
                         <form @submit.prevent="submit" class="space-y-6">
                             <!-- Period Selection -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Période
+                                    {{ t('faia.period') }}
                                 </label>
 
                                 <!-- Quick select buttons -->
@@ -193,7 +196,7 @@ const getStatusBadge = (status) => {
                                 <!-- Date inputs -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Du</label>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('faia.from') }}</label>
                                         <input
                                             v-model="form.period_start"
                                             type="date"
@@ -201,7 +204,7 @@ const getStatusBadge = (status) => {
                                         />
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Au</label>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('faia.to') }}</label>
                                         <input
                                             v-model="form.period_end"
                                             type="date"
@@ -214,7 +217,7 @@ const getStatusBadge = (status) => {
                             <!-- Format Selection -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Format
+                                    {{ t('faia.format') }}
                                 </label>
                                 <div class="space-y-2">
                                     <label
@@ -241,7 +244,7 @@ const getStatusBadge = (status) => {
                             <!-- Options -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Options
+                                    {{ t('faia.options') }}
                                 </label>
                                 <div class="space-y-3">
                                     <label class="flex items-center">
@@ -251,7 +254,7 @@ const getStatusBadge = (status) => {
                                             class="h-4 w-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-600"
                                         />
                                         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                            Inclure les avoirs (notes de crédit)
+                                            {{ t('faia.include_credit_notes') }}
                                         </span>
                                     </label>
                                     <label class="flex items-center">
@@ -261,7 +264,7 @@ const getStatusBadge = (status) => {
                                             class="h-4 w-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-600"
                                         />
                                         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                            Anonymiser les données clients (test)
+                                            {{ t('faia.anonymize_data') }}
                                         </span>
                                     </label>
                                 </div>
@@ -269,14 +272,14 @@ const getStatusBadge = (status) => {
 
                             <!-- Preview -->
                             <div v-if="preview || previewLoading || previewError" class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
-                                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Aperçu</h3>
+                                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ t('faia.preview') }}</h3>
 
                                 <div v-if="previewLoading" class="flex items-center justify-center py-4">
                                     <svg class="animate-spin h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Chargement...</span>
+                                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ t('faia.loading') }}</span>
                                 </div>
 
                                 <div v-else-if="previewError" class="text-sm text-red-600 dark:text-red-400">
@@ -285,23 +288,23 @@ const getStatusBadge = (status) => {
 
                                 <div v-else-if="preview" class="space-y-2">
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Factures</span>
+                                        <span class="text-gray-600 dark:text-gray-400">{{ t('faia.invoices') }}</span>
                                         <span class="font-medium text-gray-900 dark:text-white">{{ preview.invoices_count }}</span>
                                     </div>
                                     <div v-if="form.include_credit_notes" class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Avoirs</span>
+                                        <span class="text-gray-600 dark:text-gray-400">{{ t('faia.credit_notes') }}</span>
                                         <span class="font-medium text-gray-900 dark:text-white">{{ preview.credit_notes_count }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm pt-2 border-t border-gray-200 dark:border-gray-600">
-                                        <span class="text-gray-600 dark:text-gray-400">Total HT</span>
+                                        <span class="text-gray-600 dark:text-gray-400">{{ t('faia.total_ht') }}</span>
                                         <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(preview.total_ht) }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Total TVA</span>
+                                        <span class="text-gray-600 dark:text-gray-400">{{ t('faia.total_vat') }}</span>
                                         <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(preview.total_vat) }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Total TTC</span>
+                                        <span class="text-gray-600 dark:text-gray-400">{{ t('faia.total_ttc') }}</span>
                                         <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(preview.total_ttc) }}</span>
                                     </div>
 
@@ -311,18 +314,18 @@ const getStatusBadge = (status) => {
                                             <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                             </svg>
-                                            Séquençage OK
+                                            {{ t('faia.sequence_ok') }}
                                         </div>
                                         <div v-else class="text-sm text-amber-600 dark:text-amber-400">
                                             <div class="flex items-center">
                                                 <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                                 </svg>
-                                                Trous dans la numérotation
+                                                {{ t('faia.sequence_gaps') }}
                                             </div>
                                             <ul v-if="preview.sequence_errors?.length" class="mt-1 ml-5 list-disc text-xs">
                                                 <li v-for="error in preview.sequence_errors.slice(0, 5)" :key="error">{{ error }}</li>
-                                                <li v-if="preview.sequence_errors.length > 5">... et {{ preview.sequence_errors.length - 5 }} autres</li>
+                                                <li v-if="preview.sequence_errors.length > 5">{{ t('faia.and_more', { count: preview.sequence_errors.length - 5 }) }}</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -336,8 +339,8 @@ const getStatusBadge = (status) => {
                                     :disabled="form.processing || !preview || (preview.invoices_count === 0 && preview.credit_notes_count === 0)"
                                     class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span v-if="form.processing">Génération...</span>
-                                    <span v-else>Générer l'export</span>
+                                    <span v-if="form.processing">{{ t('faia.generating') }}</span>
+                                    <span v-else>{{ t('faia.generate_export') }}</span>
                                 </button>
                             </div>
                         </form>
@@ -346,11 +349,11 @@ const getStatusBadge = (status) => {
                     <!-- Export History -->
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Historique des exports
+                            {{ t('faia.export_history') }}
                         </h2>
 
                         <div v-if="exports.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            Aucun export réalisé
+                            {{ t('faia.no_exports') }}
                         </div>
 
                         <div v-else class="space-y-3">
@@ -373,11 +376,11 @@ const getStatusBadge = (status) => {
                                     </div>
                                     <div class="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                                         <span>{{ exportItem.format_label }}</span>
-                                        <span v-if="exportItem.documents_count">{{ exportItem.documents_count }} docs</span>
+                                        <span v-if="exportItem.documents_count">{{ exportItem.documents_count }} {{ t('faia.docs') }}</span>
                                         <span>{{ formatDateTime(exportItem.created_at) }}</span>
                                     </div>
                                     <div v-if="!exportItem.sequence_valid" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                                        Séquençage incomplet
+                                        {{ t('faia.sequence_incomplete') }}
                                     </div>
                                 </div>
 
@@ -386,7 +389,7 @@ const getStatusBadge = (status) => {
                                         v-if="exportItem.status === 'completed'"
                                         @click="downloadExport(exportItem)"
                                         class="p-2 text-violet-600 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg"
-                                        title="Télécharger"
+                                        :title="t('download')"
                                     >
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -395,7 +398,7 @@ const getStatusBadge = (status) => {
                                     <button
                                         @click="deleteExport(exportItem)"
                                         class="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg"
-                                        title="Supprimer"
+                                        :title="t('delete')"
                                     >
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -415,11 +418,10 @@ const getStatusBadge = (status) => {
                         </svg>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
-                                À propos du FAIA
+                                {{ t('faia.about_faia') }}
                             </h3>
                             <p class="mt-1 text-sm text-blue-700 dark:text-blue-400">
-                                Le FAIA (Fichier d'Audit Informatisé de l'AED) est un standard exigé par l'Administration des contributions directes
-                                du Luxembourg lors des contrôles fiscaux. L'export XML FAIA respecte le format SAF-T luxembourgeois.
+                                {{ t('faia.faia_description') }}
                             </p>
                         </div>
                     </div>

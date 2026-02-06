@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -8,6 +9,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 const recovery = ref(false);
+const { t } = useTranslations();
 
 const form = useForm({
     code: '',
@@ -27,21 +29,20 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Vérification en deux étapes" />
+        <Head :title="t('two_factor_title')" />
 
         <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
             <template v-if="!recovery">
-                Veuillez entrer le code à 6 chiffres généré par votre application
-                d'authentification (Google Authenticator, Authy, etc.).
+                {{ t('two_factor_description') }}
             </template>
             <template v-else>
-                Veuillez entrer l'un de vos codes de récupération d'urgence.
+                {{ t('two_factor_recovery_description') }}
             </template>
         </div>
 
         <form @submit.prevent="submit">
             <div v-if="!recovery">
-                <InputLabel for="code" value="Code d'authentification" />
+                <InputLabel for="code" :value="t('authentication_code')" />
                 <TextInput
                     id="code"
                     ref="codeInput"
@@ -59,7 +60,7 @@ const submit = () => {
             </div>
 
             <div v-else>
-                <InputLabel for="recovery_code" value="Code de récupération" />
+                <InputLabel for="recovery_code" :value="t('recovery_code')" />
                 <TextInput
                     id="recovery_code"
                     ref="recoveryCodeInput"
@@ -79,10 +80,10 @@ const submit = () => {
                     @click="toggleRecovery"
                 >
                     <template v-if="!recovery">
-                        Utiliser un code de récupération
+                        {{ t('use_recovery_code') }}
                     </template>
                     <template v-else>
-                        Utiliser un code d'authentification
+                        {{ t('use_authentication_code') }}
                     </template>
                 </button>
 
@@ -90,7 +91,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Vérifier
+                    {{ t('verify') }}
                 </PrimaryButton>
             </div>
         </form>

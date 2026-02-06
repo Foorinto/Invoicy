@@ -1,11 +1,20 @@
 <?php
 
+use App\Jobs\SendPaymentReminders;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withSchedule(function (Schedule $schedule): void {
+        // Send payment reminders daily at 9:00 AM
+        $schedule->job(new SendPaymentReminders())
+            ->dailyAt('09:00')
+            ->withoutOverlapping()
+            ->onOneServer();
+    })
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
@@ -23,11 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\CheckUserIsActive::class,
-            \App\Http\Middleware\SetLocale::class,
         ]);
 
         $middleware->alias([

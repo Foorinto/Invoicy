@@ -1,7 +1,10 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     year: [String, Number],
@@ -13,20 +16,20 @@ const props = defineProps({
 
 const yearFilter = ref(String(props.year));
 
-const months = [
-    { key: '01', label: 'Janvier' },
-    { key: '02', label: 'Février' },
-    { key: '03', label: 'Mars' },
-    { key: '04', label: 'Avril' },
-    { key: '05', label: 'Mai' },
-    { key: '06', label: 'Juin' },
-    { key: '07', label: 'Juillet' },
-    { key: '08', label: 'Août' },
-    { key: '09', label: 'Septembre' },
-    { key: '10', label: 'Octobre' },
-    { key: '11', label: 'Novembre' },
-    { key: '12', label: 'Décembre' },
-];
+const months = computed(() => [
+    { key: '01', label: t('months.january') },
+    { key: '02', label: t('months.february') },
+    { key: '03', label: t('months.march') },
+    { key: '04', label: t('months.april') },
+    { key: '05', label: t('months.may') },
+    { key: '06', label: t('months.june') },
+    { key: '07', label: t('months.july') },
+    { key: '08', label: t('months.august') },
+    { key: '09', label: t('months.september') },
+    { key: '10', label: t('months.october') },
+    { key: '11', label: t('months.november') },
+    { key: '12', label: t('months.december') },
+]);
 
 watch(yearFilter, (newYear) => {
     router.get(route('expenses.summary'), { year: newYear }, {
@@ -52,7 +55,7 @@ const getCategoryData = (categoryKey) => {
 </script>
 
 <template>
-    <Head title="Résumé des dépenses" />
+    <Head :title="t('expenses_summary')" />
 
     <AppLayout>
         <template #header>
@@ -67,7 +70,7 @@ const getCategoryData = (categoryKey) => {
                         </svg>
                     </Link>
                     <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                        Résumé des dépenses
+                        {{ t('expenses_summary') }}
                     </h1>
                 </div>
 

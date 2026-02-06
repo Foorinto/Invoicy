@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FaiaValidatorController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceEmailController;
 use App\Http\Controllers\InvoiceItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
@@ -120,8 +121,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Email sending - 20 requests/hour
     Route::middleware('throttle:email')->group(function () {
-        Route::post('/invoices/{invoice}/send', [InvoiceController::class, 'sendEmail'])->name('invoices.send');
+        Route::post('/invoices/{invoice}/send-email', [InvoiceEmailController::class, 'send'])->name('invoices.send-email');
+        Route::post('/invoices/{invoice}/send-reminder', [InvoiceEmailController::class, 'sendReminder'])->name('invoices.send-reminder');
     });
+
+    // Email settings (no special rate limit)
+    Route::get('/settings/email', [InvoiceEmailController::class, 'settings'])->name('settings.email');
+    Route::put('/settings/email', [InvoiceEmailController::class, 'updateSettings'])->name('settings.email.update');
+
+    // Invoice email history
+    Route::get('/invoices/{invoice}/emails', [InvoiceEmailController::class, 'history'])->name('invoices.emails');
+    Route::post('/invoices/{invoice}/toggle-reminders', [InvoiceEmailController::class, 'toggleExcludeFromReminders'])->name('invoices.toggle-reminders');
 
     // Export operations - 5 requests/hour (very expensive)
     Route::middleware('throttle:export')->group(function () {

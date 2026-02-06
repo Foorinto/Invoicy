@@ -5,6 +5,9 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const form = useForm({
     password: '',
@@ -19,16 +22,15 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Confirmer le mot de passe" />
+        <Head :title="t('confirm_password_title')" />
 
         <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Cette action est sécurisée. Veuillez confirmer votre mot de passe
-            avant de continuer.
+            {{ t('confirm_password_message') }}
         </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="password" value="Mot de passe" />
+                <InputLabel for="password" :value="t('password')" />
                 <TextInput
                     id="password"
                     type="password"
@@ -47,7 +49,7 @@ const submit = () => {
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Confirmer
+                    {{ t('confirm') }}
                 </PrimaryButton>
             </div>
         </form>

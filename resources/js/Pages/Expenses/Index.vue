@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     expenses: Object,
@@ -47,20 +50,20 @@ const getCategoryLabel = (category) => {
 };
 
 const deleteExpense = (expense) => {
-    if (confirm(`Supprimer la dépense "${expense.provider_name}" ?`)) {
+    if (confirm(t('delete_expense').replace(':name', expense.provider_name))) {
         router.delete(route('expenses.destroy', expense.id));
     }
 };
 </script>
 
 <template>
-    <Head title="Dépenses" />
+    <Head :title="t('expenses')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Dépenses
+                    {{ t('expenses') }}
                 </h1>
                 <div class="flex items-center space-x-3">
                     <Link
@@ -70,7 +73,7 @@ const deleteExpense = (expense) => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
                         </svg>
-                        Résumé
+                        {{ t('reports') }}
                     </Link>
                     <Link
                         :href="route('expenses.create')"
@@ -79,7 +82,7 @@ const deleteExpense = (expense) => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                         </svg>
-                        Nouvelle dépense
+                        {{ t('new_expense') }}
                     </Link>
                 </div>
             </div>
@@ -88,25 +91,25 @@ const deleteExpense = (expense) => {
         <!-- Summary Cards -->
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total HT</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('total_ht') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ formatCurrency(summary.total_ht) }}
                 </dd>
             </div>
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">TVA récupérable</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('vat_deductible') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">
                     {{ formatCurrency(summary.total_vat) }}
                 </dd>
             </div>
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total TTC</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('total_ttc') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ formatCurrency(summary.total_ttc) }}
                 </dd>
             </div>
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('count') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ summary.count }}
                 </dd>
@@ -119,7 +122,7 @@ const deleteExpense = (expense) => {
                 v-model="categoryFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Toutes les catégories</option>
+                <option value="">{{ t('all_categories') }}</option>
                 <option v-for="cat in categories" :key="cat.value" :value="cat.value">
                     {{ cat.label }}
                 </option>
@@ -129,7 +132,7 @@ const deleteExpense = (expense) => {
                 v-model="yearFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Toutes les années</option>
+                <option value="">{{ t('all_years') }}</option>
                 <option v-for="year in years" :key="year" :value="year">
                     {{ year }}
                 </option>
@@ -139,7 +142,7 @@ const deleteExpense = (expense) => {
                 v-model="monthFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Tous les mois</option>
+                <option value="">{{ t('all_months') }}</option>
                 <option v-for="month in months" :key="month.value" :value="month.value">
                     {{ month.label }}
                 </option>
@@ -152,22 +155,22 @@ const deleteExpense = (expense) => {
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                            Date
+                            {{ t('date') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Fournisseur
+                            {{ t('supplier') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell">
-                            Catégorie
+                            {{ t('category') }}
                         </th>
                         <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                            HT
+                            {{ t('ht') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                            TVA
+                            {{ t('vat') }}
                         </th>
                         <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-white">
-                            Pièce
+                            {{ t('receipt') }}
                         </th>
                         <th class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                             <span class="sr-only">Actions</span>
@@ -180,12 +183,12 @@ const deleteExpense = (expense) => {
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
                             </svg>
-                            <p class="mt-2">Aucune dépense trouvée.</p>
+                            <p class="mt-2">{{ t('no_expenses') }}</p>
                             <Link
                                 :href="route('expenses.create')"
                                 class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                             >
-                                Enregistrer votre première dépense
+                                {{ t('create_first_expense') }}
                             </Link>
                         </td>
                     </tr>
@@ -221,7 +224,7 @@ const deleteExpense = (expense) => {
                                 :href="expense.attachment_url"
                                 target="_blank"
                                 class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                                title="Voir le justificatif"
+                                :title="t('view') + ' ' + t('receipt').toLowerCase()"
                             >
                                 <svg class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
@@ -235,13 +238,13 @@ const deleteExpense = (expense) => {
                                     :href="route('expenses.edit', expense.id)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
-                                    Modifier
+                                    {{ t('edit') }}
                                 </Link>
                                 <button
                                     @click="deleteExpense(expense)"
                                     class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                 >
-                                    Supprimer
+                                    {{ t('delete') }}
                                 </button>
                             </div>
                         </td>
@@ -253,7 +256,7 @@ const deleteExpense = (expense) => {
         <!-- Pagination -->
         <div v-if="expenses.links && expenses.links.length > 3" class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-700 dark:text-gray-400">
-                Affichage de {{ expenses.from }} à {{ expenses.to }} sur {{ expenses.total }} dépenses
+                {{ t('showing_x_to_y_of_z').replace(':from', expenses.from).replace(':to', expenses.to).replace(':total', expenses.total).replace(':items', t('expenses').toLowerCase()) }}
             </div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
                 <template v-for="(link, index) in expenses.links" :key="index">

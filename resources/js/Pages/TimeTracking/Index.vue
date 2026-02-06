@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     entries: Object,
@@ -189,7 +192,7 @@ const addManualEntry = () => {
 };
 
 const deleteEntry = (entry) => {
-    if (confirm('Supprimer cette entrée de temps ?')) {
+    if (confirm(t('delete_time_entry'))) {
         router.delete(route('time-entries.destroy', entry.id), {
             preserveScroll: true,
         });
@@ -216,7 +219,7 @@ const toggleAllEntries = () => {
 
 const openConvertModal = () => {
     if (selectedEntries.value.length === 0) {
-        alert('Veuillez sélectionner au moins une entrée de temps.');
+        alert(t('select_at_least_one'));
         return;
     }
 
@@ -298,13 +301,13 @@ const formatTime = (date) => {
 </script>
 
 <template>
-    <Head title="Suivi du temps" />
+    <Head :title="t('time_tracking')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Suivi du temps
+                    {{ t('time_tracking') }}
                 </h1>
                 <Link
                     :href="route('time-entries.summary')"
@@ -313,7 +316,7 @@ const formatTime = (date) => {
                     <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
                     </svg>
-                    Résumé
+                    {{ t('reports') }}
                 </Link>
             </div>
         </template>
@@ -323,10 +326,10 @@ const formatTime = (date) => {
             <div class="px-6 py-5">
                 <div v-if="runningTimer" class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-indigo-100">Timer en cours</p>
+                        <p class="text-sm font-medium text-indigo-100">{{ t('running_timer') }}</p>
                         <p class="mt-1 text-3xl font-bold text-white">{{ formattedTimerDuration }}</p>
                         <p class="mt-1 text-sm text-indigo-200">
-                            {{ runningTimer.client?.name }} - {{ runningTimer.project_name || 'Sans projet' }}
+                            {{ runningTimer.client?.name }} - {{ runningTimer.project_name || t('no_project') }}
                         </p>
                     </div>
                     <button
@@ -341,19 +344,19 @@ const formatTime = (date) => {
                         <svg v-else class="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M5.5 3.5A1.5 1.5 0 017 5v10a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5zm8 0A1.5 1.5 0 0115 5v10a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5z" clip-rule="evenodd" />
                         </svg>
-                        {{ stoppingTimer ? 'Arrêt...' : 'Arrêter' }}
+                        {{ stoppingTimer ? t('stopping') : t('stop') }}
                     </button>
                 </div>
 
                 <div v-else>
-                    <p class="mb-4 text-sm font-medium text-indigo-100">Démarrer un nouveau timer</p>
+                    <p class="mb-4 text-sm font-medium text-indigo-100">{{ t('start_new_timer') }}</p>
                     <form @submit.prevent="startTimer" class="flex flex-wrap gap-3">
                         <select
                             v-model="timerForm.client_id"
                             required
                             class="rounded-md border-0 bg-white/10 py-2 pl-3 pr-10 text-white placeholder-indigo-200 backdrop-blur focus:ring-2 focus:ring-white sm:text-sm"
                         >
-                            <option value="" class="text-gray-900">Sélectionner un client</option>
+                            <option value="" class="text-gray-900">{{ t('select_client') }}</option>
                             <option v-for="client in clients" :key="client.id" :value="client.id" class="text-gray-900">
                                 {{ client.name }}
                             </option>
@@ -361,12 +364,12 @@ const formatTime = (date) => {
                         <input
                             v-model="timerForm.project_name"
                             type="text"
-                            placeholder="Nom du projet"
+                            :placeholder="t('project_name')"
                             class="rounded-md border-0 bg-white/10 py-2 px-3 text-white placeholder-indigo-200 backdrop-blur focus:ring-2 focus:ring-white sm:text-sm"
                         />
                         <textarea
                             v-model="timerForm.description"
-                            placeholder="Description (optionnel)"
+                            :placeholder="`${t('description')} (${t('optional')})`"
                             rows="1"
                             @input="autoResizeTextarea"
                             ref="timerDescriptionRef"
@@ -380,7 +383,7 @@ const formatTime = (date) => {
                             <svg class="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                             </svg>
-                            Démarrer
+                            {{ t('start') }}
                         </button>
                     </form>
                 </div>
@@ -390,21 +393,21 @@ const formatTime = (date) => {
         <!-- Summary Cards -->
         <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Temps total</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('total_time') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                     {{ summary.total_formatted }}
                 </dd>
             </div>
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Non facturé</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('unbilled') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">
                     {{ summary.unbilled_formatted }}
                 </dd>
             </div>
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800 px-4 py-5">
-                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Sélectionné</dt>
+                <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('selected') }}</dt>
                 <dd class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
-                    {{ selectedEntries.length }} entrées
+                    {{ selectedEntries.length }}
                 </dd>
             </div>
         </div>
@@ -412,12 +415,12 @@ const formatTime = (date) => {
         <!-- Manual Entry Form -->
         <div class="mb-6 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-sm font-medium text-gray-900 dark:text-white">Ajouter une entrée manuelle</h3>
+                <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ t('add_manual_entry') }}</h3>
             </div>
             <form @submit.prevent="addManualEntry" class="px-6 py-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-6">
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Date</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('date') }}</label>
                         <input
                             v-model="manualForm.date"
                             type="date"
@@ -426,29 +429,29 @@ const formatTime = (date) => {
                         />
                     </div>
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Client</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('client') }}</label>
                         <select
                             v-model="manualForm.client_id"
                             required
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                         >
-                            <option value="">Sélectionner</option>
+                            <option value="">{{ t('select') }}</option>
                             <option v-for="client in clients" :key="client.id" :value="client.id">
                                 {{ client.name }}
                             </option>
                         </select>
                     </div>
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Projet</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('project') }}</label>
                         <input
                             v-model="manualForm.project_name"
                             type="text"
-                            placeholder="Nom du projet"
+                            :placeholder="t('project_name')"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                         />
                     </div>
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Durée (HH:MM)</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('duration_hhmm') }}</label>
                         <input
                             v-model="manualForm.duration"
                             type="text"
@@ -459,11 +462,11 @@ const formatTime = (date) => {
                         />
                     </div>
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">Description</label>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('description') }}</label>
                         <input
                             v-model="manualForm.description"
                             type="text"
-                            placeholder="Description"
+                            :placeholder="t('description')"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                         />
                     </div>
@@ -473,7 +476,7 @@ const formatTime = (date) => {
                             :disabled="manualForm.processing"
                             class="w-full inline-flex justify-center items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
                         >
-                            Ajouter
+                            {{ t('add') }}
                         </button>
                     </div>
                 </div>
@@ -487,7 +490,7 @@ const formatTime = (date) => {
                     v-model="clientFilter"
                     class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
                 >
-                    <option value="">Tous les clients</option>
+                    <option value="">{{ t('all_clients') }}</option>
                     <option v-for="client in clients" :key="client.id" :value="client.id">
                         {{ client.name }}
                     </option>
@@ -497,16 +500,16 @@ const formatTime = (date) => {
                     v-model="billedFilter"
                     class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
                 >
-                    <option value="">Tous les statuts</option>
-                    <option value="0">Non facturé</option>
-                    <option value="1">Facturé</option>
+                    <option value="">{{ t('all_statuses') }}</option>
+                    <option value="0">{{ t('unbilled') }}</option>
+                    <option value="1">{{ t('billed') }}</option>
                 </select>
 
                 <select
                     v-model="periodFilter"
                     class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
                 >
-                    <option value="">Toutes les périodes</option>
+                    <option value="">{{ t('all_periods') }}</option>
                     <option v-for="period in periods" :key="period.value" :value="period.value">
                         {{ period.label }}
                     </option>
@@ -521,7 +524,7 @@ const formatTime = (date) => {
                 <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm4.75 6.75a.75.75 0 011.5 0v2.546l.943-1.048a.75.75 0 011.114 1.004l-2.25 2.5a.75.75 0 01-1.114 0l-2.25-2.5a.75.75 0 111.114-1.004l.943 1.048V8.75z" clip-rule="evenodd" />
                 </svg>
-                Convertir en facture ({{ selectedEntries.length }})
+                {{ t('convert_to_invoice') }} ({{ selectedEntries.length }})
             </button>
         </div>
 
@@ -539,25 +542,25 @@ const formatTime = (date) => {
                             />
                         </th>
                         <th class="py-3.5 px-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Date
+                            {{ t('date') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Client / Projet
+                            {{ t('client_project') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell">
-                            Description
+                            {{ t('description') }}
                         </th>
                         <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                            Durée
+                            {{ t('duration') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                            Montant
+                            {{ t('amount') }}
                         </th>
                         <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-white">
-                            Statut
+                            {{ t('status') }}
                         </th>
                         <th class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
+                            <span class="sr-only">{{ t('actions') }}</span>
                         </th>
                     </tr>
                 </thead>
@@ -567,8 +570,8 @@ const formatTime = (date) => {
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p class="mt-2">Aucune entrée de temps trouvée.</p>
-                            <p class="mt-1 text-xs">Démarrez un timer ou ajoutez une entrée manuelle.</p>
+                            <p class="mt-2">{{ t('no_time_entries') }}</p>
+                            <p class="mt-1 text-xs">{{ t('start_new_timer') }}</p>
                         </td>
                     </tr>
                     <tr v-for="entry in entries.data" :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -587,10 +590,10 @@ const formatTime = (date) => {
                         </td>
                         <td class="whitespace-nowrap px-3 py-4">
                             <div class="font-medium text-gray-900 dark:text-white">
-                                {{ entry.client?.name || 'Client inconnu' }}
+                                {{ entry.client?.name || t('unknown_client') }}
                             </div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ entry.project_name || 'Sans projet' }}
+                                {{ entry.project_name || t('no_project') }}
                             </div>
                         </td>
                         <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-gray-400 md:table-cell">
@@ -611,7 +614,7 @@ const formatTime = (date) => {
                                         : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
                                 ]"
                             >
-                                {{ entry.is_billed ? 'Facturé' : 'Non facturé' }}
+                                {{ entry.is_billed ? t('billed') : t('unbilled') }}
                             </span>
                         </td>
                         <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -620,7 +623,7 @@ const formatTime = (date) => {
                                     v-if="draftInvoices.some(inv => inv.client_id === entry.client_id)"
                                     @click="openAddToInvoiceModal(entry)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                    title="Ajouter à une facture"
+                                    :title="t('add_to_invoice')"
                                 >
                                     <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
@@ -629,7 +632,7 @@ const formatTime = (date) => {
                                 <button
                                     @click="deleteEntry(entry)"
                                     class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                    title="Supprimer"
+                                    :title="t('delete')"
                                 >
                                     <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
@@ -645,7 +648,7 @@ const formatTime = (date) => {
         <!-- Pagination -->
         <div v-if="entries.links && entries.links.length > 3" class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-700 dark:text-gray-400">
-                Affichage de {{ entries.from }} à {{ entries.to }} sur {{ entries.total }} entrées
+                {{ t('showing') }} {{ entries.from }} {{ t('to') }} {{ entries.to }} {{ t('of') }} {{ entries.total }} {{ t('results') }}
             </div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
                 <template v-for="(link, index) in entries.links" :key="index">
@@ -675,17 +678,17 @@ const formatTime = (date) => {
                     <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Convertir en facture
+                                {{ t('convert_to_invoice') }}
                             </h3>
                             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                {{ selectedEntries.length }} entrées sélectionnées
+                                {{ selectedEntries.length }} {{ t('selected') }}
                             </p>
                         </div>
 
                         <form @submit.prevent="convertToInvoice" class="mt-6 space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Taux horaire
+                                    {{ t('hourly_rate') }}
                                 </label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <input
@@ -704,24 +707,24 @@ const formatTime = (date) => {
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Taux de TVA
+                                    {{ t('vat_rate') }}
                                 </label>
                                 <select
                                     v-if="!isVatExempt"
                                     v-model="convertForm.vat_rate"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                                 >
-                                    <option :value="0">0% (Exonéré)</option>
-                                    <option :value="3">3% (Super-réduit)</option>
-                                    <option :value="8">8% (Réduit)</option>
-                                    <option :value="14">14% (Intermédiaire)</option>
-                                    <option :value="17">17% (Standard)</option>
+                                    <option :value="0">0%</option>
+                                    <option :value="3">3%</option>
+                                    <option :value="8">8%</option>
+                                    <option :value="14">14%</option>
+                                    <option :value="17">17%</option>
                                 </select>
                                 <div
                                     v-else
                                     class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-gray-500 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400 sm:text-sm"
                                 >
-                                    0% (Exonéré)
+                                    0%
                                 </div>
                             </div>
 
@@ -733,7 +736,7 @@ const formatTime = (date) => {
                                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <label for="group_by_project" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                    Regrouper par projet
+                                    {{ t('group_by_project') }}
                                 </label>
                             </div>
 
@@ -743,14 +746,14 @@ const formatTime = (date) => {
                                     @click="showConvertModal = false"
                                     class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                 >
-                                    Annuler
+                                    {{ t('cancel') }}
                                 </button>
                                 <button
                                     type="submit"
                                     :disabled="convertForm.processing"
                                     class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
                                 >
-                                    Créer la facture
+                                    {{ t('create_invoice') }}
                                 </button>
                             </div>
                         </form>
@@ -767,7 +770,7 @@ const formatTime = (date) => {
                     <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Ajouter à une facture
+                                {{ t('add_to_invoice') }}
                             </h3>
                             <p v-if="selectedEntryForInvoice" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 {{ selectedEntryForInvoice.client?.name }} - {{ selectedEntryForInvoice.duration_formatted }}
@@ -777,28 +780,28 @@ const formatTime = (date) => {
                         <form @submit.prevent="addToInvoice" class="mt-6 space-y-4">
                             <div v-if="availableInvoicesForEntry.length === 0" class="rounded-md bg-amber-50 p-4 dark:bg-amber-900/20">
                                 <p class="text-sm text-amber-800 dark:text-amber-200">
-                                    Aucune facture brouillon disponible pour ce client.
+                                    {{ t('no_draft_invoice') }}
                                 </p>
                                 <Link
                                     :href="route('invoices.create')"
                                     class="mt-2 inline-flex text-sm font-medium text-amber-800 hover:text-amber-700 dark:text-amber-200"
                                 >
-                                    Créer une nouvelle facture →
+                                    {{ t('create_new_invoice') }}
                                 </Link>
                             </div>
 
                             <div v-else>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Facture
+                                    {{ t('invoice') }}
                                 </label>
                                 <select
                                     v-model="addToInvoiceForm.invoice_id"
                                     required
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                                 >
-                                    <option value="">Sélectionner une facture</option>
+                                    <option value="">{{ t('select') }}</option>
                                     <option v-for="invoice in availableInvoicesForEntry" :key="invoice.id" :value="invoice.id">
-                                        {{ invoice.title || invoice.display_number }} - {{ invoice.created_at }} ({{ formatCurrency(invoice.total_ht) }} HT)
+                                        {{ invoice.title || invoice.display_number }} - {{ invoice.created_at }} ({{ formatCurrency(invoice.total_ht) }} {{ t('ht') }})
                                     </option>
                                 </select>
                             </div>
@@ -806,7 +809,7 @@ const formatTime = (date) => {
                             <div v-if="availableInvoicesForEntry.length > 0" class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Taux horaire
+                                        {{ t('hourly_rate') }}
                                     </label>
                                     <div class="mt-1 relative rounded-md shadow-sm">
                                         <input
@@ -824,24 +827,24 @@ const formatTime = (date) => {
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Taux de TVA
+                                        {{ t('vat_rate') }}
                                     </label>
                                     <select
                                         v-if="!isVatExempt"
                                         v-model="addToInvoiceForm.vat_rate"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
                                     >
-                                        <option :value="0">0% (Exonéré)</option>
-                                        <option :value="3">3% (Super-réduit)</option>
-                                        <option :value="8">8% (Réduit)</option>
-                                        <option :value="14">14% (Intermédiaire)</option>
-                                        <option :value="17">17% (Standard)</option>
+                                        <option :value="0">0%</option>
+                                        <option :value="3">3%</option>
+                                        <option :value="8">8%</option>
+                                        <option :value="14">14%</option>
+                                        <option :value="17">17%</option>
                                     </select>
                                     <div
                                         v-else
                                         class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-gray-500 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-400 sm:text-sm"
                                     >
-                                        0% (Exonéré)
+                                        0%
                                     </div>
                                 </div>
                             </div>
@@ -852,7 +855,7 @@ const formatTime = (date) => {
                                     @click="showAddToInvoiceModal = false; selectedEntryForInvoice = null;"
                                     class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                 >
-                                    Annuler
+                                    {{ t('cancel') }}
                                 </button>
                                 <button
                                     v-if="availableInvoicesForEntry.length > 0"
@@ -860,7 +863,7 @@ const formatTime = (date) => {
                                     :disabled="addToInvoiceForm.processing || !addToInvoiceForm.invoice_id"
                                     class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
                                 >
-                                    Ajouter
+                                    {{ t('add') }}
                                 </button>
                             </div>
                         </form>

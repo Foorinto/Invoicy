@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     invoices: Array,
@@ -71,13 +74,13 @@ const exportCsv = () => {
 </script>
 
 <template>
-    <Head title="Livre des recettes" />
+    <Head :title="t('revenue_book_title')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Livre des recettes
+                    {{ t('revenue_book_title') }}
                 </h1>
                 <div class="flex items-center space-x-3">
                     <button
@@ -108,14 +111,14 @@ const exportCsv = () => {
             <!-- Period Selection -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Période</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('period') }}</h2>
                 </div>
                 <div class="px-6 py-4">
                     <div class="flex flex-wrap gap-4 items-end">
                         <!-- Date inputs -->
                         <div>
                             <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Du
+                                {{ t('from_date') }}
                             </label>
                             <input
                                 id="start_date"
@@ -127,7 +130,7 @@ const exportCsv = () => {
                         </div>
                         <div>
                             <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Au
+                                {{ t('to_date') }}
                             </label>
                             <input
                                 id="end_date"
@@ -159,7 +162,7 @@ const exportCsv = () => {
 
                     <!-- Year quick select -->
                     <div class="mt-4 flex items-center gap-2">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Année :</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('year') }} :</span>
                         <button
                             v-for="year in years"
                             :key="year"
@@ -191,7 +194,7 @@ const exportCsv = () => {
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                        Factures payées
+                                        {{ t('paid_invoices') }}
                                     </dt>
                                     <dd class="text-lg font-semibold text-gray-900 dark:text-white">
                                         {{ totals.count }}
@@ -213,7 +216,7 @@ const exportCsv = () => {
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                        Total HT
+                                        {{ t('total_ht') }}
                                     </dt>
                                     <dd class="text-lg font-semibold text-gray-900 dark:text-white">
                                         {{ formatCurrency(totals.ht) }}
@@ -235,7 +238,7 @@ const exportCsv = () => {
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                        Total TVA
+                                        {{ t('total_vat') }}
                                     </dt>
                                     <dd class="text-lg font-semibold text-gray-900 dark:text-white">
                                         {{ formatCurrency(totals.vat) }}
@@ -257,7 +260,7 @@ const exportCsv = () => {
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                        Total TTC
+                                        {{ t('total_ttc') }}
                                     </dt>
                                     <dd class="text-lg font-semibold text-green-600 dark:text-green-400">
                                         {{ formatCurrency(totals.ttc) }}
@@ -272,20 +275,20 @@ const exportCsv = () => {
             <!-- VAT Breakdown -->
             <div v-if="vatBreakdown.length > 0" class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Récapitulatif TVA</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('vat_summary_title') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                                    Taux TVA
+                                    {{ t('vat_rate_label') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Base HT
+                                    {{ t('base_ht') }}
                                 </th>
                                 <th class="py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Montant TVA
+                                    {{ t('vat_amount') }}
                                 </th>
                             </tr>
                         </thead>
@@ -305,7 +308,7 @@ const exportCsv = () => {
                         <tfoot class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm font-semibold text-gray-900 dark:text-white">
-                                    Total
+                                    {{ t('total') }}
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
                                     {{ formatCurrency(totals.ht) }}
@@ -323,7 +326,7 @@ const exportCsv = () => {
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        Détail des recettes
+                        {{ t('revenue_details') }}
                         <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
                             ({{ formatPeriodLabel() }})
                         </span>
@@ -334,22 +337,22 @@ const exportCsv = () => {
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                                    Date paiement
+                                    {{ t('payment_date') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                                    N° Facture
+                                    {{ t('invoice_number') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                                    Client
+                                    {{ t('client') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Total HT
+                                    {{ t('total_ht') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    TVA
+                                    {{ t('vat') }}
                                 </th>
                                 <th class="py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Total TTC
+                                    {{ t('total_ttc') }}
                                 </th>
                             </tr>
                         </thead>
@@ -359,7 +362,7 @@ const exportCsv = () => {
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                    <p class="mt-2">Aucune recette sur cette période.</p>
+                                    <p class="mt-2">{{ t('no_revenue_this_period') }}</p>
                                 </td>
                             </tr>
                             <tr v-for="invoice in invoices" :key="invoice.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">

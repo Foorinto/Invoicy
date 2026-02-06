@@ -81,11 +81,11 @@ class InvoiceController extends Controller
                 'type' => $request->input('type'),
             ],
             'statuses' => [
-                ['value' => 'draft', 'label' => 'Brouillon'],
-                ['value' => 'finalized', 'label' => 'Finalisée'],
-                ['value' => 'sent', 'label' => 'Envoyée'],
-                ['value' => 'paid', 'label' => 'Payée'],
-                ['value' => 'cancelled', 'label' => 'Annulée'],
+                ['value' => 'draft', 'label' => __('app.draft')],
+                ['value' => 'finalized', 'label' => __('app.finalized')],
+                ['value' => 'sent', 'label' => __('app.sent')],
+                ['value' => 'paid', 'label' => __('app.paid')],
+                ['value' => 'cancelled', 'label' => __('app.cancelled')],
             ],
             'years' => $years,
             'clients' => Client::orderBy('name')->get(['id', 'name']),
@@ -325,11 +325,13 @@ class InvoiceController extends Controller
 
     /**
      * Download the invoice as PDF.
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function downloadPdf(Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
+    public function downloadPdf(Request $request, Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
     {
         try {
-            return $pdfService->download($invoice);
+            $locale = $this->validatePdfLocale($request->query('locale'));
+            return $pdfService->download($invoice, $locale);
         } catch (\InvalidArgumentException $e) {
             abort(400, $e->getMessage());
         }
@@ -337,11 +339,13 @@ class InvoiceController extends Controller
 
     /**
      * Stream the invoice as PDF.
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function streamPdf(Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
+    public function streamPdf(Request $request, Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
     {
         try {
-            return $pdfService->stream($invoice);
+            $locale = $this->validatePdfLocale($request->query('locale'));
+            return $pdfService->stream($invoice, $locale);
         } catch (\InvalidArgumentException $e) {
             abort(400, $e->getMessage());
         }
@@ -349,11 +353,13 @@ class InvoiceController extends Controller
 
     /**
      * Preview the invoice PDF as HTML (Inertia page).
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function previewPdf(Invoice $invoice, InvoicePdfService $pdfService): Response
+    public function previewPdf(Request $request, Invoice $invoice, InvoicePdfService $pdfService): Response
     {
         try {
-            $html = $pdfService->preview($invoice);
+            $locale = $this->validatePdfLocale($request->query('locale'));
+            $html = $pdfService->preview($invoice, $locale);
 
             return Inertia::render('Invoices/PdfPreview', [
                 'invoice' => $invoice,
@@ -366,11 +372,13 @@ class InvoiceController extends Controller
 
     /**
      * Get preview HTML for finalized invoice (API endpoint for modal).
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function previewHtml(Invoice $invoice, InvoicePdfService $pdfService): \Illuminate\Http\JsonResponse
+    public function previewHtml(Request $request, Invoice $invoice, InvoicePdfService $pdfService): \Illuminate\Http\JsonResponse
     {
         try {
-            $html = $pdfService->preview($invoice);
+            $locale = $this->validatePdfLocale($request->query('locale'));
+            $html = $pdfService->preview($invoice, $locale);
             return response()->json(['html' => $html]);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -379,11 +387,13 @@ class InvoiceController extends Controller
 
     /**
      * Get live preview HTML for draft invoice (API endpoint for iframe).
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function previewDraft(Invoice $invoice, InvoicePdfService $pdfService): \Illuminate\Http\JsonResponse
+    public function previewDraft(Request $request, Invoice $invoice, InvoicePdfService $pdfService): \Illuminate\Http\JsonResponse
     {
         try {
-            $html = $pdfService->previewDraft($invoice);
+            $locale = $this->validatePdfLocale($request->query('locale'));
+            $html = $pdfService->previewDraft($invoice, $locale);
             return response()->json(['html' => $html]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -392,14 +402,31 @@ class InvoiceController extends Controller
 
     /**
      * Stream draft invoice as PDF.
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function streamDraftPdf(Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
+    public function streamDraftPdf(Request $request, Invoice $invoice, InvoicePdfService $pdfService): HttpResponse
     {
+        $locale = $this->validatePdfLocale($request->query('locale'));
+
         if ($invoice->isFinalized()) {
-            return $this->streamPdf($invoice, $pdfService);
+            return $pdfService->stream($invoice, $locale);
         }
 
-        return $pdfService->streamDraft($invoice);
+        return $pdfService->streamDraft($invoice, $locale);
+    }
+
+    /**
+     * Validate and return PDF locale if valid, null otherwise.
+     */
+    private function validatePdfLocale(?string $locale): ?string
+    {
+        $supportedLocales = ['fr', 'de', 'en', 'lb'];
+
+        if ($locale && in_array($locale, $supportedLocales)) {
+            return $locale;
+        }
+
+        return null;
     }
 
     /**
@@ -445,7 +472,7 @@ class InvoiceController extends Controller
         // If seller is VAT exempt (franchise), only 0%
         if ($isVatExempt) {
             return [
-                ['value' => 0, 'label' => '0% (Exonéré - Franchise)', 'default' => true],
+                ['value' => 0, 'label' => __('app.vat_rates.exempt_franchise'), 'default' => true],
             ];
         }
 
@@ -458,21 +485,21 @@ class InvoiceController extends Controller
             if (in_array($scenario['key'], ['B2B_INTRA_EU', 'EXPORT'])) {
                 return [
                     ['value' => 0, 'label' => '0% (' . $scenario['label'] . ')', 'default' => true],
-                    ['value' => 17, 'label' => '17% (Standard)'],
-                    ['value' => 14, 'label' => '14% (Intermédiaire)'],
-                    ['value' => 8, 'label' => '8% (Réduit)'],
-                    ['value' => 3, 'label' => '3% (Super-réduit)'],
+                    ['value' => 17, 'label' => __('app.vat_rates.standard')],
+                    ['value' => 14, 'label' => __('app.vat_rates.intermediate')],
+                    ['value' => 8, 'label' => __('app.vat_rates.reduced')],
+                    ['value' => 3, 'label' => __('app.vat_rates.super_reduced')],
                 ];
             }
         }
 
         // Standard Luxembourg rates
         return [
-            ['value' => 17, 'label' => '17% (Standard)', 'default' => true],
-            ['value' => 14, 'label' => '14% (Intermédiaire)'],
-            ['value' => 8, 'label' => '8% (Réduit)'],
-            ['value' => 3, 'label' => '3% (Super-réduit)'],
-            ['value' => 0, 'label' => '0% (Exonéré)'],
+            ['value' => 17, 'label' => __('app.vat_rates.standard'), 'default' => true],
+            ['value' => 14, 'label' => __('app.vat_rates.intermediate')],
+            ['value' => 8, 'label' => __('app.vat_rates.reduced')],
+            ['value' => 3, 'label' => __('app.vat_rates.super_reduced')],
+            ['value' => 0, 'label' => __('app.vat_rates.exempt')],
         ];
     }
 

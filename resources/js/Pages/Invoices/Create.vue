@@ -6,6 +6,9 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import VatScenarioIndicator from '@/Components/VatScenarioIndicator.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     clients: Array,
@@ -62,7 +65,7 @@ if (form.items.length === 0) {
 </script>
 
 <template>
-    <Head title="Nouvelle facture" />
+    <Head :title="t('new_invoice')" />
 
     <AppLayout>
         <template #header>
@@ -76,7 +79,7 @@ if (form.items.length === 0) {
                     </svg>
                 </Link>
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Nouvelle facture
+                    {{ t('new_invoice') }}
                 </h1>
             </div>
         </template>
@@ -97,7 +100,7 @@ if (form.items.length === 0) {
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 required
                             >
-                                <option value="">Sélectionner un client</option>
+                                <option value="">{{ t('select_client') }}</option>
                                 <option v-for="client in clients" :key="client.id" :value="client.id">
                                     {{ client.name }}
                                 </option>
@@ -110,20 +113,20 @@ if (form.items.length === 0) {
                         </div>
 
                         <div>
-                            <InputLabel for="title" value="Titre (optionnel)" />
+                            <InputLabel for="title" :value="t('title_optional')" />
                             <input
                                 id="title"
                                 v-model="form.title"
                                 type="text"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Ex: Prestation janvier 2026"
+                                :placeholder="t('example_placeholder')"
                             />
                             <InputError :message="form.errors.title" class="mt-2" />
                         </div>
                     </div>
 
                     <div class="mt-4">
-                        <InputLabel for="due_at" value="Date d'échéance (optionnel)" />
+                        <InputLabel for="due_at" :value="t('due_date_optional')" />
                         <input
                             id="due_at"
                             v-model="form.due_at"
@@ -131,7 +134,7 @@ if (form.items.length === 0) {
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:max-w-xs"
                         />
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Par défaut: 30 jours après finalisation
+                            {{ t('default_30_days_after') }}
                         </p>
                         <InputError :message="form.errors.due_at" class="mt-2" />
                     </div>
@@ -141,7 +144,7 @@ if (form.items.length === 0) {
             <!-- Invoice items -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Lignes de facture</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('invoice_lines') }}</h2>
                 </div>
                 <div class="px-6 py-4">
                     <div class="space-y-4">
@@ -152,31 +155,31 @@ if (form.items.length === 0) {
                         >
                             <div class="flex flex-wrap gap-4 items-end">
                                 <div class="flex-1 min-w-[200px]">
-                                    <InputLabel :for="`item-${index}-title`" value="Titre *" />
+                                    <InputLabel :for="`item-${index}-title`" :value="t('title_required')" />
                                     <input
                                         :id="`item-${index}-title`"
                                         v-model="item.title"
                                         type="text"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Titre de la prestation"
+                                        :placeholder="t('service_title_placeholder')"
                                         required
                                     />
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-4 items-end">
                                 <div class="flex-1 min-w-[200px]">
-                                    <InputLabel :for="`item-${index}-description`" value="Description (optionnel)" />
+                                    <InputLabel :for="`item-${index}-description`" :value="t('description_optional')" />
                                     <input
                                         :id="`item-${index}-description`"
                                         v-model="item.description"
                                         type="text"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Détails supplémentaires..."
+                                        :placeholder="t('additional_details')"
                                     />
                                 </div>
 
                             <div class="w-24">
-                                <InputLabel :for="`item-${index}-quantity`" value="Qté" />
+                                <InputLabel :for="`item-${index}-quantity`" :value="t('qty')" />
                                 <input
                                     :id="`item-${index}-quantity`"
                                     v-model.number="item.quantity"
@@ -189,7 +192,7 @@ if (form.items.length === 0) {
                             </div>
 
                             <div class="w-32">
-                                <InputLabel :for="`item-${index}-unit`" value="Unité" />
+                                <InputLabel :for="`item-${index}-unit`" :value="t('unit')" />
                                 <select
                                     :id="`item-${index}-unit`"
                                     v-model="item.unit"
@@ -203,7 +206,7 @@ if (form.items.length === 0) {
                             </div>
 
                             <div class="w-32">
-                                <InputLabel :for="`item-${index}-unit_price`" value="Prix HT" />
+                                <InputLabel :for="`item-${index}-unit_price`" :value="t('price_ht')" />
                                 <input
                                     :id="`item-${index}-unit_price`"
                                     v-model.number="item.unit_price"
@@ -216,7 +219,7 @@ if (form.items.length === 0) {
                             </div>
 
                             <div class="w-32">
-                                <InputLabel :for="`item-${index}-vat_rate`" value="TVA" />
+                                <InputLabel :for="`item-${index}-vat_rate`" :value="t('vat')" />
                                 <select
                                     :id="`item-${index}-vat_rate`"
                                     v-model.number="item.vat_rate"
@@ -250,7 +253,7 @@ if (form.items.length === 0) {
                             <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                             </svg>
-                            Ajouter une ligne
+                            {{ t('add_line') }}
                         </button>
                     </div>
                 </div>
@@ -259,14 +262,14 @@ if (form.items.length === 0) {
             <!-- Notes -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Notes (optionnel)</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('notes_optional') }}</h2>
                 </div>
                 <div class="px-6 py-4">
                     <textarea
                         v-model="form.notes"
                         rows="3"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        placeholder="Notes ou conditions particulières..."
+                        :placeholder="t('notes_placeholder')"
                     ></textarea>
                     <InputError :message="form.errors.notes" class="mt-2" />
                 </div>
@@ -278,11 +281,11 @@ if (form.items.length === 0) {
                     :href="route('invoices.index')"
                     class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
-                    Annuler
+                    {{ t('cancel') }}
                 </Link>
                 <PrimaryButton :disabled="form.processing">
-                    <span v-if="form.processing">Création...</span>
-                    <span v-else>Créer le brouillon</span>
+                    <span v-if="form.processing">{{ t('creating') }}</span>
+                    <span v-else>{{ t('create_draft') }}</span>
                 </PrimaryButton>
             </div>
         </form>

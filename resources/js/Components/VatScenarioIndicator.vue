@@ -1,5 +1,8 @@
 <script setup>
 import { computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     scenario: {
@@ -38,9 +41,9 @@ const sizeClasses = computed(() => {
 
 const vatRateText = computed(() => {
     if (props.scenario.rate === 0) {
-        return 'TVA 0%';
+        return `${t('vat')} 0%`;
     }
-    return `TVA ${props.scenario.rate}%`;
+    return `${t('vat')} ${props.scenario.rate}%`;
 });
 </script>
 

@@ -31,11 +31,13 @@ class Client extends Model
         'notes',
         'default_hourly_rate',
         'locale',
+        'exclude_from_reminders',
     ];
 
     protected $casts = [
         'type' => 'string',
         'default_hourly_rate' => 'decimal:2',
+        'exclude_from_reminders' => 'boolean',
     ];
 
     /**

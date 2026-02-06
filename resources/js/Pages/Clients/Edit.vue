@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ClientForm from '@/Components/ClientForm.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     client: {
@@ -45,12 +48,12 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="`Modifier ${client.name}`" />
+    <Head :title="`${t('edit')} ${client.name}`" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Modifier {{ client.name }}
+                {{ t('edit') }} {{ client.name }}
             </h1>
         </template>
 
@@ -60,7 +63,7 @@ const submit = () => {
                 :client-types="clientTypes"
                 :currencies="currencies"
                 :countries="countries"
-                submit-label="Enregistrer les modifications"
+                :submit-label="t('save')"
                 cancel-route="clients.show"
                 :cancel-route-params="client.id"
                 @submit="submit"

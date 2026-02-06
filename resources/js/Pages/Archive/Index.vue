@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     stats: Object,
@@ -66,12 +69,12 @@ const verifyIntegrity = async (invoice) => {
         const result = await response.json();
 
         if (result.valid) {
-            alert('Intégrité vérifiée : Le fichier est intact.');
+            alert(t('integrity_verified'));
         } else {
-            alert('Erreur d\'intégrité : ' + result.error);
+            alert(t('integrity_error', { error: result.error }));
         }
     } catch (error) {
-        alert('Erreur lors de la vérification.');
+        alert(t('verification_error'));
     }
 };
 
@@ -110,12 +113,12 @@ const progressWidth = computed(() => {
 </script>
 
 <template>
-    <Head title="Archivage PDF/A" />
+    <Head :title="t('pdf_a_archiving')" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Archivage Documents
+                {{ t('archive_title') }}
             </h1>
         </template>
 
@@ -129,11 +132,10 @@ const progressWidth = computed(() => {
                         </svg>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-amber-800 dark:text-amber-300">
-                                Conversion PDF/A non disponible
+                                {{ t('pdfa_not_available') }}
                             </h3>
                             <p class="mt-1 text-sm text-amber-700 dark:text-amber-400">
-                                Ghostscript n'est pas installé sur ce serveur. Les documents seront archivés au format PDF standard.
-                                Pour une conformité PDF/A complète, contactez votre hébergeur.
+                                {{ t('ghostscript_not_installed') }}
                             </p>
                         </div>
                     </div>
@@ -142,12 +144,12 @@ const progressWidth = computed(() => {
                 <!-- Statistics -->
                 <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Statut Global
+                        {{ t('global_status') }}
                     </h2>
 
                     <div class="mb-4">
                         <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
-                            <span>{{ stats.total_archived }} / {{ stats.total_finalized }} documents archivés</span>
+                            <span>{{ t('documents_archived', { count: stats.total_archived, total: stats.total_finalized }) }}</span>
                             <span>{{ stats.archive_percentage }}%</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
@@ -161,25 +163,25 @@ const progressWidth = computed(() => {
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.total_finalized }}</div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">Total finalisées</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">{{ t('total_finalized') }}</div>
                         </div>
                         <div class="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                             <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.total_archived }}</div>
-                            <div class="text-sm text-green-600 dark:text-green-400">Archivées</div>
+                            <div class="text-sm text-green-600 dark:text-green-400">{{ t('archived') }}</div>
                         </div>
                         <div class="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                             <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ stats.not_archived }}</div>
-                            <div class="text-sm text-amber-600 dark:text-amber-400">En attente</div>
+                            <div class="text-sm text-amber-600 dark:text-amber-400">{{ t('waiting') }}</div>
                         </div>
                         <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                             <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ stats.expiring_this_year }}</div>
-                            <div class="text-sm text-blue-600 dark:text-blue-400">Expirent cette année</div>
+                            <div class="text-sm text-blue-600 dark:text-blue-400">{{ t('expire_this_year') }}</div>
                         </div>
                     </div>
 
                     <!-- Format breakdown -->
                     <div v-if="Object.keys(stats.by_format).length > 0" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Par format :</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">{{ t('by_format') }}</div>
                         <div class="flex gap-4 mt-2">
                             <span
                                 v-for="(count, format) in stats.by_format"
@@ -197,7 +199,7 @@ const progressWidth = computed(() => {
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                                Documents non archivés ({{ pendingInvoices.length }})
+                                {{ t('unarchived_documents', { count: pendingInvoices.length }) }}
                             </h2>
 
                             <select
@@ -211,7 +213,7 @@ const progressWidth = computed(() => {
                         </div>
 
                         <div v-if="pendingInvoices.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            Tous les documents sont archivés !
+                            {{ t('all_documents_archived') }}
                         </div>
 
                         <div v-else>
@@ -223,7 +225,7 @@ const progressWidth = computed(() => {
                                         type="checkbox"
                                         class="h-4 w-4 rounded text-violet-600 focus:ring-violet-500 border-gray-300 dark:border-gray-600"
                                     />
-                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Tout sélectionner</span>
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ t('select_all') }}</span>
                                 </label>
 
                                 <button
@@ -232,8 +234,8 @@ const progressWidth = computed(() => {
                                     :disabled="batchForm.processing"
                                     class="ml-auto px-3 py-1 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50"
                                 >
-                                    <span v-if="batchForm.processing">Archivage...</span>
-                                    <span v-else>Archiver ({{ selectedIds.length }})</span>
+                                    <span v-if="batchForm.processing">{{ t('archiving') }}</span>
+                                    <span v-else>{{ t('archive_selected', { count: selectedIds.length }) }}</span>
                                 </button>
                             </div>
 
@@ -263,7 +265,7 @@ const progressWidth = computed(() => {
                                     <button
                                         @click="archiveInvoice(invoice)"
                                         class="p-2 text-violet-600 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg"
-                                        title="Archiver"
+                                        :title="t('archive_action')"
                                     >
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
@@ -277,11 +279,11 @@ const progressWidth = computed(() => {
                     <!-- Recently archived -->
                     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Récemment archivés
+                            {{ t('recently_archived') }}
                         </h2>
 
                         <div v-if="recentlyArchived.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                            Aucun document archivé
+                            {{ t('no_archived_documents') }}
                         </div>
 
                         <div v-else class="space-y-2 max-h-96 overflow-y-auto">
@@ -300,9 +302,9 @@ const progressWidth = computed(() => {
                                         </span>
                                     </div>
                                     <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <span>Archivé le {{ formatDateTime(invoice.archived_at) }}</span>
+                                        <span>{{ t('archived_on', { date: formatDateTime(invoice.archived_at) }) }}</span>
                                         <span class="mx-1">|</span>
-                                        <span>Expire le {{ formatDate(invoice.archive_expires_at) }}</span>
+                                        <span>{{ t('expires_on', { date: formatDate(invoice.archive_expires_at) }) }}</span>
                                     </div>
                                     <div class="mt-1 text-xs text-gray-400 dark:text-gray-500 font-mono truncate">
                                         SHA256: {{ invoice.archive_checksum?.substring(0, 16) }}...
@@ -313,7 +315,7 @@ const progressWidth = computed(() => {
                                     <a
                                         :href="route('invoices.archive.download', invoice.id)"
                                         class="p-2 text-violet-600 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg"
-                                        title="Télécharger"
+                                        :title="t('download')"
                                     >
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -322,7 +324,7 @@ const progressWidth = computed(() => {
                                     <button
                                         @click="verifyIntegrity(invoice)"
                                         class="p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 rounded-lg"
-                                        title="Vérifier l'intégrité"
+                                        :title="t('verify_integrity')"
                                     >
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -342,12 +344,10 @@ const progressWidth = computed(() => {
                         </svg>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
-                                Archivage légal Luxembourg
+                                {{ t('luxembourg_archiving') }}
                             </h3>
                             <p class="mt-1 text-sm text-blue-700 dark:text-blue-400">
-                                La réglementation luxembourgeoise exige une conservation des documents comptables pendant 10 ans.
-                                Le format PDF/A (ISO 19005) garantit la lisibilité et l'intégrité des documents sur cette durée.
-                                Un checksum SHA256 est calculé pour chaque document afin de vérifier son intégrité.
+                                {{ t('archiving_info') }}
                             </p>
                         </div>
                     </div>

@@ -2,6 +2,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ClientForm from '@/Components/ClientForm.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     clientTypes: {
@@ -41,12 +44,12 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Nouveau client" />
+    <Head :title="t('new_client')" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Nouveau client
+                {{ t('new_client') }}
             </h1>
         </template>
 
@@ -56,7 +59,7 @@ const submit = () => {
                 :client-types="clientTypes"
                 :currencies="currencies"
                 :countries="countries"
-                submit-label="Créer le client"
+                :submit-label="t('create')"
                 @submit="submit"
             />
         </div>

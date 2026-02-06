@@ -9,6 +9,9 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     requiresConfirmation: Boolean,
@@ -107,32 +110,29 @@ const disableTwoFactorAuthentication = () => {
 <template>
     <ActionSection>
         <template #title>
-            Authentification à deux facteurs
+            {{ t('two_factor_authentication') }}
         </template>
 
         <template #description>
-            Ajoutez une couche de sécurité supplémentaire à votre compte en utilisant
-            l'authentification à deux facteurs.
+            {{ t('two_factor_description') }}
         </template>
 
         <template #content>
             <h3 v-if="twoFactorEnabled && !confirming" class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                L'authentification à deux facteurs est activée.
+                {{ t('two_factor_enabled') }}
             </h3>
 
             <h3 v-else-if="twoFactorEnabled && confirming" class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Finalisez l'activation de l'authentification à deux facteurs.
+                {{ t('two_factor_finish_enabling') }}
             </h3>
 
             <h3 v-else class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                L'authentification à deux facteurs n'est pas activée.
+                {{ t('two_factor_not_enabled') }}
             </h3>
 
             <div class="mt-3 max-w-xl text-sm text-gray-600 dark:text-gray-400">
                 <p>
-                    Lorsque l'authentification à deux facteurs est activée, un code aléatoire
-                    vous sera demandé lors de l'authentification. Vous pouvez récupérer ce code
-                    depuis l'application Google Authenticator ou Authy de votre téléphone.
+                    {{ t('two_factor_explanation') }}
                 </p>
             </div>
 
@@ -140,14 +140,11 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="qrCode">
                     <div class="mt-4 max-w-xl text-sm text-gray-600 dark:text-gray-400">
                         <p v-if="confirming" class="font-semibold">
-                            Pour finaliser l'activation, scannez le QR code suivant avec votre
-                            application d'authentification ou entrez la clé de configuration.
+                            {{ t('two_factor_scan_qr_confirming') }}
                         </p>
 
                         <p v-else>
-                            L'authentification à deux facteurs est maintenant activée. Scannez le
-                            QR code suivant avec votre application d'authentification ou entrez
-                            la clé de configuration.
+                            {{ t('two_factor_scan_qr_enabled') }}
                         </p>
                     </div>
 
@@ -155,12 +152,12 @@ const disableTwoFactorAuthentication = () => {
 
                     <div v-if="setupKey" class="mt-4 max-w-xl text-sm text-gray-600 dark:text-gray-400">
                         <p class="font-semibold">
-                            Clé de configuration : <span class="font-mono text-base select-all">{{ setupKey }}</span>
+                            {{ t('setup_key') }} <span class="font-mono text-base select-all">{{ setupKey }}</span>
                         </p>
                     </div>
 
                     <div v-if="confirming" class="mt-4">
-                        <InputLabel for="code" value="Code" />
+                        <InputLabel for="code" :value="t('code')" />
 
                         <TextInput
                             id="code"
@@ -181,9 +178,7 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="recoveryCodes.length > 0 && !confirming">
                     <div class="mt-4 max-w-xl text-sm text-gray-600 dark:text-gray-400">
                         <p class="font-semibold">
-                            Conservez ces codes de récupération dans un gestionnaire de mots de passe
-                            sécurisé. Ils peuvent être utilisés pour récupérer l'accès à votre compte
-                            si vous perdez votre appareil d'authentification à deux facteurs.
+                            {{ t('recovery_codes_info') }}
                         </p>
                     </div>
 
@@ -199,7 +194,7 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="!twoFactorEnabled">
                     <ConfirmsPassword @confirmed="enableTwoFactorAuthentication">
                         <PrimaryButton type="button" :class="{ 'opacity-25': enabling }" :disabled="enabling">
-                            Activer
+                            {{ t('enable') }}
                         </PrimaryButton>
                     </ConfirmsPassword>
                 </div>
@@ -213,7 +208,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': enabling }"
                             :disabled="enabling"
                         >
-                            Confirmer
+                            {{ t('confirm') }}
                         </PrimaryButton>
                     </ConfirmsPassword>
 
@@ -222,7 +217,7 @@ const disableTwoFactorAuthentication = () => {
                             v-if="recoveryCodes.length > 0 && !confirming"
                             class="me-3"
                         >
-                            Régénérer les codes de récupération
+                            {{ t('regenerate_recovery_codes') }}
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -231,7 +226,7 @@ const disableTwoFactorAuthentication = () => {
                             v-if="recoveryCodes.length === 0 && !confirming"
                             class="me-3"
                         >
-                            Afficher les codes de récupération
+                            {{ t('show_recovery_codes') }}
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -241,7 +236,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': disabling }"
                             :disabled="disabling"
                         >
-                            Annuler
+                            {{ t('cancel') }}
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -251,7 +246,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': disabling }"
                             :disabled="disabling"
                         >
-                            Désactiver
+                            {{ t('disable') }}
                         </DangerButton>
                     </ConfirmsPassword>
                 </div>

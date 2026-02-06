@@ -265,26 +265,32 @@ class QuoteController extends Controller
 
     /**
      * Download the quote as PDF.
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function downloadPdf(Quote $quote, QuotePdfService $pdfService): HttpResponse
+    public function downloadPdf(Request $request, Quote $quote, QuotePdfService $pdfService): HttpResponse
     {
-        return $pdfService->download($quote);
+        $locale = $this->validatePdfLocale($request->query('locale'));
+        return $pdfService->download($quote, $locale);
     }
 
     /**
      * Stream the quote as PDF.
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function streamPdf(Quote $quote, QuotePdfService $pdfService): HttpResponse
+    public function streamPdf(Request $request, Quote $quote, QuotePdfService $pdfService): HttpResponse
     {
-        return $pdfService->stream($quote);
+        $locale = $this->validatePdfLocale($request->query('locale'));
+        return $pdfService->stream($quote, $locale);
     }
 
     /**
      * Preview the quote PDF as HTML (Inertia page).
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function previewPdf(Quote $quote, QuotePdfService $pdfService): Response
+    public function previewPdf(Request $request, Quote $quote, QuotePdfService $pdfService): Response
     {
-        $html = $pdfService->preview($quote);
+        $locale = $this->validatePdfLocale($request->query('locale'));
+        $html = $pdfService->preview($quote, $locale);
 
         return Inertia::render('Quotes/PdfPreview', [
             'quote' => $quote,
@@ -294,11 +300,27 @@ class QuoteController extends Controller
 
     /**
      * Get preview HTML for quote (API endpoint for modal).
+     * Accepts optional 'locale' query parameter to override PDF language.
      */
-    public function previewHtml(Quote $quote, QuotePdfService $pdfService): \Illuminate\Http\JsonResponse
+    public function previewHtml(Request $request, Quote $quote, QuotePdfService $pdfService): \Illuminate\Http\JsonResponse
     {
-        $html = $pdfService->preview($quote);
+        $locale = $this->validatePdfLocale($request->query('locale'));
+        $html = $pdfService->preview($quote, $locale);
         return response()->json(['html' => $html]);
+    }
+
+    /**
+     * Validate and return PDF locale if valid, null otherwise.
+     */
+    private function validatePdfLocale(?string $locale): ?string
+    {
+        $supportedLocales = ['fr', 'de', 'en', 'lb'];
+
+        if ($locale && in_array($locale, $supportedLocales)) {
+            return $locale;
+        }
+
+        return null;
     }
 
     /**

@@ -4,8 +4,11 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import { computed, watch, ref } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     settings: {
@@ -103,7 +106,7 @@ const uploadLogo = () => {
 };
 
 const deleteLogo = () => {
-    if (confirm('Supprimer le logo ?')) {
+    if (confirm(t('delete_logo'))) {
         router.delete(route('settings.business.logo.delete'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -121,24 +124,42 @@ const cancelLogoUpload = () => {
 </script>
 
 <template>
-    <Head title="Réglages - Entreprise" />
+    <Head :title="t('settings_business')" />
 
     <AppLayout>
         <template #header>
             <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                Réglages de l'entreprise
+                {{ t('settings') }}
             </h1>
         </template>
+
+        <!-- Settings Navigation -->
+        <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex space-x-8" aria-label="Settings tabs">
+                <Link
+                    :href="route('settings.business.edit')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                >
+                    {{ t('business_settings') }}
+                </Link>
+                <Link
+                    :href="route('settings.email')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                    {{ t('email_settings') }}
+                </Link>
+            </nav>
+        </div>
 
         <div class="mx-auto max-w-3xl space-y-8">
             <!-- Logo -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                        Logo
+                        {{ t('logo') }}
                     </h2>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Votre logo apparaîtra en haut à droite de vos factures.
+                        {{ t('logo_appears_on_invoices') }}
                     </p>
                 </div>
                 <div class="px-6 py-4">
@@ -176,12 +197,12 @@ const cancelLogoUpload = () => {
                             />
 
                             <div v-if="!settings" class="text-sm text-amber-600 dark:text-amber-400 mb-3">
-                                Enregistrez d'abord les informations de l'entreprise avant d'ajouter un logo.
+                                {{ t('save_company_first') }}
                             </div>
 
                             <div v-else-if="logoForm.logo" class="space-y-3">
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Nouveau fichier sélectionné : <span class="font-medium">{{ logoForm.logo.name }}</span>
+                                    {{ t('new_file_selected') }} <span class="font-medium">{{ logoForm.logo.name }}</span>
                                 </p>
                                 <div class="flex space-x-3">
                                     <button
@@ -194,14 +215,14 @@ const cancelLogoUpload = () => {
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Enregistrer
+                                        {{ t('save') }}
                                     </button>
                                     <button
                                         type="button"
                                         @click="cancelLogoUpload"
                                         class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
                                     >
-                                        Annuler
+                                        {{ t('cancel') }}
                                     </button>
                                 </div>
                                 <InputError :message="logoForm.errors.logo" />
@@ -209,8 +230,8 @@ const cancelLogoUpload = () => {
 
                             <div v-else class="space-y-3">
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Format recommandé : PNG ou SVG avec fond transparent.<br>
-                                    Taille maximale : 2 Mo.
+                                    {{ t('logo_format_info') }}<br>
+                                    {{ t('max_size') }} 2 Mo.
                                 </p>
                                 <div class="flex space-x-3">
                                     <button
@@ -221,7 +242,7 @@ const cancelLogoUpload = () => {
                                         <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                         </svg>
-                                        {{ settings?.logo_path ? 'Changer le logo' : 'Ajouter un logo' }}
+                                        {{ settings?.logo_path ? t('change_logo') : t('add_logo') }}
                                     </button>
                                     <button
                                         v-if="settings?.logo_path"
@@ -232,7 +253,7 @@ const cancelLogoUpload = () => {
                                         <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
-                                        Supprimer
+                                        {{ t('delete') }}
                                     </button>
                                 </div>
                             </div>
@@ -246,16 +267,16 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Informations légales
+                            {{ t('legal_information') }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Ces informations apparaîtront sur vos factures.
+                            {{ t('legal_info_appear_invoices') }}
                         </p>
                     </div>
                     <div class="px-6 py-4 space-y-4">
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel for="company_name" value="Nom commercial" />
+                                <InputLabel for="company_name" :value="t('commercial_name')" />
                                 <TextInput
                                     id="company_name"
                                     v-model="form.company_name"
@@ -268,7 +289,7 @@ const cancelLogoUpload = () => {
                             </div>
 
                             <div>
-                                <InputLabel for="legal_name" value="Nom légal complet" />
+                                <InputLabel for="legal_name" :value="t('legal_name')" />
                                 <TextInput
                                     id="legal_name"
                                     v-model="form.legal_name"
@@ -282,7 +303,7 @@ const cancelLogoUpload = () => {
                         </div>
 
                         <div>
-                            <InputLabel for="address" value="Adresse" />
+                            <InputLabel for="address" :value="t('address')" />
                             <textarea
                                 id="address"
                                 v-model="form.address"
@@ -296,7 +317,7 @@ const cancelLogoUpload = () => {
 
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div>
-                                <InputLabel for="postal_code" value="Code postal" />
+                                <InputLabel for="postal_code" :value="t('postal_code')" />
                                 <TextInput
                                     id="postal_code"
                                     v-model="form.postal_code"
@@ -309,7 +330,7 @@ const cancelLogoUpload = () => {
                             </div>
 
                             <div>
-                                <InputLabel for="city" value="Ville" />
+                                <InputLabel for="city" :value="t('city')" />
                                 <TextInput
                                     id="city"
                                     v-model="form.city"
@@ -322,7 +343,7 @@ const cancelLogoUpload = () => {
                             </div>
 
                             <div>
-                                <InputLabel for="country_code" value="Pays" />
+                                <InputLabel for="country_code" :value="t('country')" />
                                 <select
                                     id="country_code"
                                     v-model="form.country_code"
@@ -344,16 +365,16 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Identifiants fiscaux
+                            {{ t('tax_identifiers') }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Informations requises par l'administration luxembourgeoise.
+                            {{ t('tax_info_required') }}
                         </p>
                     </div>
                     <div class="px-6 py-4 space-y-4">
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel for="matricule" value="Matricule national (11-13 chiffres)" />
+                                <InputLabel for="matricule" :value="t('matricule_label')" />
                                 <TextInput
                                     id="matricule"
                                     v-model="form.matricule"
@@ -364,15 +385,15 @@ const cancelLogoUpload = () => {
                                     placeholder="0000000000000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Numéro d'identification national à 13 chiffres
+                                    {{ t('matricule_help') }}
                                 </p>
                                 <InputError :message="form.errors.matricule" class="mt-2" />
                             </div>
 
                             <div>
                                 <InputLabel for="rcs_number">
-                                    N° RCS Luxembourg
-                                    <span class="text-gray-400 text-xs">(optionnel)</span>
+                                    {{ t('rcs_number_label') }}
+                                    <span class="text-gray-400 text-xs">({{ t('optional') }})</span>
                                 </InputLabel>
                                 <TextInput
                                     id="rcs_number"
@@ -383,7 +404,7 @@ const cancelLogoUpload = () => {
                                     placeholder="A00000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Registre de Commerce et des Sociétés (ex: A12345, B98765)
+                                    {{ t('rcs_help') }}
                                 </p>
                                 <InputError :message="form.errors.rcs_number" class="mt-2" />
                             </div>
@@ -392,9 +413,9 @@ const cancelLogoUpload = () => {
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
                                 <InputLabel for="vat_number">
-                                    N° TVA intracommunautaire
+                                    {{ t('vat_number') }}
                                     <span v-if="isVatRequired" class="text-red-500">*</span>
-                                    <span v-else class="text-gray-400 text-xs">(optionnel)</span>
+                                    <span v-else class="text-gray-400 text-xs">({{ t('optional') }})</span>
                                 </InputLabel>
                                 <TextInput
                                     id="vat_number"
@@ -406,16 +427,16 @@ const cancelLogoUpload = () => {
                                     placeholder="LU00000000"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Format Luxembourg : LU + 8 chiffres
-                                    <span v-if="!isVatRequired"> (conservé pour référence)</span>
+                                    {{ t('vat_format_help') }}
+                                    <span v-if="!isVatRequired"> ({{ t('kept_for_reference') }})</span>
                                 </p>
                                 <InputError :message="form.errors.vat_number" class="mt-2" />
                             </div>
 
                             <div>
                                 <InputLabel for="establishment_authorization">
-                                    Autorisation d'établissement
-                                    <span class="text-gray-400 text-xs">(optionnel)</span>
+                                    {{ t('establishment_authorization') }}
+                                    <span class="text-gray-400 text-xs">({{ t('optional') }})</span>
                                 </InputLabel>
                                 <TextInput
                                     id="establishment_authorization"
@@ -426,14 +447,14 @@ const cancelLogoUpload = () => {
                                     placeholder="N° d'autorisation"
                                 />
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    Délivrée par le Ministère de l'Économie
+                                    {{ t('establishment_authorization_help') }}
                                 </p>
                                 <InputError :message="form.errors.establishment_authorization" class="mt-2" />
                             </div>
                         </div>
 
                         <div>
-                            <InputLabel value="Régime TVA" />
+                            <InputLabel :value="t('vat_regime')" />
                             <div class="mt-2 space-y-3">
                                 <label
                                     v-for="regime in vatRegimes"
@@ -470,15 +491,15 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Coordonnées bancaires
+                            {{ t('bank_details') }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Pour le paiement de vos factures.
+                            {{ t('bank_details_help') }}
                         </p>
                     </div>
                     <div class="px-6 py-4 space-y-4">
                         <div>
-                            <InputLabel for="bank_name" value="Nom de la banque (optionnel)" />
+                            <InputLabel for="bank_name" :value="`${t('bank_name')} (${t('optional')})`" />
                             <TextInput
                                 id="bank_name"
                                 v-model="form.bank_name"
@@ -523,15 +544,15 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Tarification
+                            {{ t('pricing') }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Taux horaire par défaut utilisé lors de la facturation du temps.
+                            {{ t('pricing_help') }}
                         </p>
                     </div>
                     <div class="px-6 py-4">
                         <div class="max-w-xs">
-                            <InputLabel for="default_hourly_rate" value="Taux horaire par défaut (€/h)" />
+                            <InputLabel for="default_hourly_rate" :value="t('default_hourly_rate')" />
                             <div class="mt-1 relative rounded-md shadow-sm">
                                 <TextInput
                                     id="default_hourly_rate"
@@ -547,7 +568,7 @@ const cancelLogoUpload = () => {
                                 </div>
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Ce taux sera utilisé par défaut si aucun taux n'est défini sur le client ou l'entrée de temps.
+                                {{ t('hourly_rate_help') }}
                             </p>
                             <InputError :message="form.errors.default_hourly_rate" class="mt-2" />
                         </div>
@@ -558,16 +579,16 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Personnalisation des factures
+                            {{ t('invoice_customization') }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Messages affichés sur vos factures.
+                            {{ t('invoice_customization_help') }}
                         </p>
                     </div>
                     <div class="px-6 py-4 space-y-6">
                         <!-- VAT Mention -->
                         <div>
-                            <InputLabel for="default_vat_mention" value="Mention TVA par défaut" />
+                            <InputLabel for="default_vat_mention" :value="t('default_vat_mention')" />
                             <select
                                 id="default_vat_mention"
                                 v-model="form.default_vat_mention"
@@ -578,29 +599,29 @@ const cancelLogoUpload = () => {
                                 </option>
                             </select>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Cette mention apparaîtra en bas du tableau des totaux sur vos factures.
+                                {{ t('vat_mention_help') }}
                             </p>
                             <InputError :message="form.errors.default_vat_mention" class="mt-2" />
                         </div>
 
                         <!-- Custom VAT Mention (shown only when "other" is selected) -->
                         <div v-if="form.default_vat_mention === 'other'">
-                            <InputLabel for="default_custom_vat_mention" value="Mention TVA personnalisée" />
+                            <InputLabel for="default_custom_vat_mention" :value="t('custom_vat_mention')" />
                             <textarea
                                 id="default_custom_vat_mention"
                                 v-model="form.default_custom_vat_mention"
                                 rows="2"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Saisissez votre mention TVA personnalisée..."
+                                :placeholder="t('custom_vat_placeholder')"
                             ></textarea>
                             <InputError :message="form.errors.default_custom_vat_mention" class="mt-2" />
                         </div>
 
                         <!-- PDF Color -->
                         <div>
-                            <InputLabel value="Couleur du PDF" />
+                            <InputLabel :value="t('pdf_color')" />
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                Cette couleur sera utilisée pour les titres, en-têtes de tableau et accents sur vos factures.
+                                {{ t('pdf_color_help') }}
                             </p>
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <button
@@ -625,7 +646,7 @@ const cancelLogoUpload = () => {
                                 </button>
                             </div>
                             <div class="flex items-center gap-3">
-                                <label class="text-sm text-gray-600 dark:text-gray-400">Couleur personnalisée :</label>
+                                <label class="text-sm text-gray-600 dark:text-gray-400">{{ t('custom_color') }}</label>
                                 <input
                                     type="color"
                                     v-model="form.default_pdf_color"
@@ -644,7 +665,7 @@ const cancelLogoUpload = () => {
 
                         <!-- Footer Message -->
                         <div>
-                            <InputLabel for="default_invoice_footer" value="Message de pied de page par défaut" />
+                            <InputLabel for="default_invoice_footer" :value="t('default_footer_message')" />
                             <textarea
                                 id="default_invoice_footer"
                                 v-model="form.default_invoice_footer"
@@ -653,7 +674,7 @@ const cancelLogoUpload = () => {
                                 placeholder="Merci pour votre confiance !"
                             ></textarea>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Ce message apparaîtra en bas de toutes vos factures. Vous pouvez le personnaliser pour chaque facture individuellement.
+                                {{ t('footer_message_help') }}
                             </p>
                             <InputError :message="form.errors.default_invoice_footer" class="mt-2" />
                         </div>
@@ -664,13 +685,13 @@ const cancelLogoUpload = () => {
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Contact
+                            {{ t('contact') }}
                         </h2>
                     </div>
                     <div class="px-6 py-4 space-y-4">
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <InputLabel for="email" value="Email" />
+                                <InputLabel for="email" :value="t('email')" />
                                 <TextInput
                                     id="email"
                                     v-model="form.email"
@@ -686,14 +707,14 @@ const cancelLogoUpload = () => {
                                         class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                                     />
                                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                                        Afficher sur les factures
+                                        {{ t('show_on_invoices') }}
                                     </span>
                                 </label>
                                 <InputError :message="form.errors.email" class="mt-2" />
                             </div>
 
                             <div>
-                                <InputLabel for="phone" value="Téléphone (optionnel)" />
+                                <InputLabel for="phone" :value="t('phone_optional')" />
                                 <TextInput
                                     id="phone"
                                     v-model="form.phone"
@@ -708,7 +729,7 @@ const cancelLogoUpload = () => {
                                         class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
                                     />
                                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                                        Afficher sur les factures
+                                        {{ t('show_on_invoices') }}
                                     </span>
                                 </label>
                                 <InputError :message="form.errors.phone" class="mt-2" />
@@ -729,15 +750,15 @@ const cancelLogoUpload = () => {
                             v-if="form.recentlySuccessful"
                             class="text-sm text-green-600 dark:text-green-400"
                         >
-                            Enregistré
+                            {{ t('saved') }}
                         </p>
                     </Transition>
                     <PrimaryButton
                         :disabled="form.processing"
                         :class="{ 'opacity-25': form.processing }"
                     >
-                        <span v-if="form.processing">Enregistrement...</span>
-                        <span v-else>Enregistrer</span>
+                        <span v-if="form.processing">{{ t('saving') }}</span>
+                        <span v-else>{{ t('save') }}</span>
                     </PrimaryButton>
                 </div>
             </form>

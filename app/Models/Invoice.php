@@ -66,6 +66,7 @@ class Invoice extends Model
         'custom_vat_mention',
         'payment_reference',
         'currency',
+        'exclude_from_reminders',
     ];
 
     protected $casts = [
@@ -81,6 +82,7 @@ class Invoice extends Model
         'total_ht' => 'decimal:4',
         'total_vat' => 'decimal:4',
         'total_ttc' => 'decimal:4',
+        'exclude_from_reminders' => 'boolean',
     ];
 
     /**
@@ -171,6 +173,14 @@ class Invoice extends Model
     public function creditNotes(): HasMany
     {
         return $this->hasMany(Invoice::class, 'credit_note_for');
+    }
+
+    /**
+     * Get all emails sent for this invoice.
+     */
+    public function emails(): HasMany
+    {
+        return $this->hasMany(InvoiceEmail::class)->orderByDesc('sent_at');
     }
 
     /**

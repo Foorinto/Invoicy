@@ -129,13 +129,13 @@ class InvoiceItem extends Model
     public static function getUnits(): array
     {
         return [
-            self::UNIT_HOUR => 'heure(s)',
-            self::UNIT_DAY => 'jour(s)',
-            self::UNIT_PIECE => 'unité(s)',
-            self::UNIT_PACKAGE => 'forfait',
-            self::UNIT_MONTH => 'mois',
-            self::UNIT_WORD => 'mot(s)',
-            self::UNIT_PAGE => 'page(s)',
+            self::UNIT_HOUR => __('app.units.hour'),
+            self::UNIT_DAY => __('app.units.day'),
+            self::UNIT_PIECE => __('app.units.piece'),
+            self::UNIT_PACKAGE => __('app.units.package'),
+            self::UNIT_MONTH => __('app.units.month'),
+            self::UNIT_WORD => __('app.units.word'),
+            self::UNIT_PAGE => __('app.units.page'),
         ];
     }
 
@@ -145,13 +145,13 @@ class InvoiceItem extends Model
     public static function getUnitLabels(): array
     {
         return [
-            self::UNIT_HOUR => ['singular' => 'heure', 'plural' => 'heures'],
-            self::UNIT_DAY => ['singular' => 'jour', 'plural' => 'jours'],
-            self::UNIT_PIECE => ['singular' => 'unité', 'plural' => 'unités'],
-            self::UNIT_PACKAGE => ['singular' => 'forfait', 'plural' => 'forfaits'],
-            self::UNIT_MONTH => ['singular' => 'mois', 'plural' => 'mois'],
-            self::UNIT_WORD => ['singular' => 'mot', 'plural' => 'mots'],
-            self::UNIT_PAGE => ['singular' => 'page', 'plural' => 'pages'],
+            self::UNIT_HOUR => __('app.unit_labels.hour'),
+            self::UNIT_DAY => __('app.unit_labels.day'),
+            self::UNIT_PIECE => __('app.unit_labels.piece'),
+            self::UNIT_PACKAGE => __('app.unit_labels.package'),
+            self::UNIT_MONTH => __('app.unit_labels.month'),
+            self::UNIT_WORD => __('app.unit_labels.word'),
+            self::UNIT_PAGE => __('app.unit_labels.page'),
         ];
     }
 

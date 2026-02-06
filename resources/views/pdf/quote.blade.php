@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ $locale ?? 'fr' }}">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Devis {{ $quote->reference }}</title>
+    <title>{{ __('invoice.quote') }} {{ $quote->reference }}</title>
     <style>
         * {
             margin: 0;
@@ -359,8 +359,8 @@
         <!-- Top Header with Title and Logo -->
         <div class="top-header">
             <div class="title-section">
-                <div class="document-title">Devis</div>
-                <div class="document-number">Réf. {{ $quote->reference ?? 'BROUILLON' }}</div>
+                <div class="document-title">{{ __('invoice.quote') }}</div>
+                <div class="document-number">{{ __('invoice.reference') }} {{ $quote->reference ?? 'BROUILLON' }}</div>
             </div>
             @if(!empty($logoPath))
                 <div class="logo-section">
@@ -384,21 +384,21 @@
                     <div class="company-details">N° Matricule : {{ $seller['matricule'] }}</div>
                 @endif
                 @if(!empty($seller['rcs_number']))
-                    <div class="company-details">N° RCS : {{ $seller['rcs_number'] }}</div>
+                    <div class="company-details">{{ __('invoice.rcs_number') }} {{ $seller['rcs_number'] }}</div>
                 @endif
                 @if(($seller['vat_regime'] ?? '') === 'assujetti' && !empty($seller['vat_number']))
-                    <div class="company-details">N° TVA : {{ $seller['vat_number'] }}</div>
+                    <div class="company-details">{{ __('invoice.vat_number') }} {{ $seller['vat_number'] }}</div>
                 @endif
                 @if(!empty($seller['establishment_authorization']))
                     <div class="company-details">Autorisation : {{ $seller['establishment_authorization'] }}</div>
                 @endif
 
                 <div class="date-row">
-                    <span class="date-label">Date d'émission</span>
+                    <span class="date-label">{{ __('invoice.issue_date') }}</span>
                     <span class="date-value">{{ $quote->created_at?->format('d/m/Y') ?? now()->format('d/m/Y') }}</span>
                 </div>
                 <div class="date-row">
-                    <span class="date-label">Valide jusqu'au</span>
+                    <span class="date-label">{{ __('invoice.validity_date') }}</span>
                     <span class="date-value">{{ $quote->valid_until?->format('d/m/Y') ?? '-' }}</span>
                 </div>
             </div>
@@ -413,10 +413,10 @@
                     {{ $buyer['postal_code'] ?? '' }} {{ $buyer['city'] ?? '' }} {{ $buyer['country'] ?? '' }}
                 </div>
                 @if(!empty($buyer['registration_number']))
-                    <div class="company-details">N° RCS/SIRET : {{ $buyer['registration_number'] }}</div>
+                    <div class="company-details">{{ __('invoice.siret_number') }} {{ $buyer['registration_number'] }}</div>
                 @endif
                 @if(!empty($buyer['vat_number']))
-                    <div class="company-details">N° TVA : {{ $buyer['vat_number'] }}</div>
+                    <div class="company-details">{{ __('invoice.vat_number') }} {{ $buyer['vat_number'] }}</div>
                 @endif
             </div>
         </div>
@@ -426,11 +426,11 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th class="col-designation">Désignation et description</th>
-                    <th class="col-unit">Unité</th>
-                    <th class="col-qty">Quantité</th>
-                    <th class="col-price">Prix unitaire</th>
-                    <th class="col-total">Montant HT</th>
+                    <th class="col-designation">{{ __('invoice.description') }}</th>
+                    <th class="col-unit">{{ __('invoice.unit') }}</th>
+                    <th class="col-qty">{{ __('invoice.quantity') }}</th>
+                    <th class="col-price">{{ __('invoice.unit_price') }}</th>
+                    <th class="col-total">{{ __('invoice.amount_ht') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -451,7 +451,7 @@
                 @empty
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 30px; color: #999;">
-                            Aucun article
+                            {{ __('invoice.no_items') }}
                         </td>
                     </tr>
                 @endforelse
@@ -462,29 +462,29 @@
         <div class="bottom-section">
             <div class="conditions-column">
                 <div class="condition-item">
-                    <div class="condition-label">Validité du devis</div>
+                    <div class="condition-label">{{ __('invoice.quote_validity') }}</div>
                     <div class="condition-value">
                         @if($quote->valid_until)
-                            Jusqu'au {{ $quote->valid_until->format('d/m/Y') }}
+                            {{ $quote->valid_until->format('d/m/Y') }}
                         @else
-                            30 jours
+                            30 {{ __('invoice.days') }}
                         @endif
                     </div>
                 </div>
 
                 <div class="condition-item">
-                    <div class="condition-label">Conditions de paiement</div>
-                    <div class="condition-value">À réception de facture, sous 30 jours</div>
+                    <div class="condition-label">{{ __('invoice.payment_terms') }}</div>
+                    <div class="condition-value">30 {{ __('invoice.days') }}</div>
                 </div>
 
                 <div class="condition-item">
-                    <div class="condition-label">Moyens de paiement acceptés</div>
-                    <div class="condition-value">Virement bancaire</div>
+                    <div class="condition-label">{{ __('invoice.payment_method') }}</div>
+                    <div class="condition-value">{{ __('invoice.bank_transfer') }}</div>
                 </div>
 
                 @if($quote->notes)
                     <div class="condition-item" style="margin-top: 10px;">
-                        <div class="condition-label">Conditions particulières</div>
+                        <div class="condition-label">{{ __('invoice.payment_terms') }}</div>
                         <div class="condition-value">{!! nl2br(e($quote->notes)) !!}</div>
                     </div>
                 @endif
@@ -493,18 +493,18 @@
             <div class="totals-column">
                 <div class="totals-box">
                     <div class="total-row">
-                        <span class="total-label">Total HT</span>
+                        <span class="total-label">{{ __('invoice.subtotal') }}</span>
                         <span class="total-value">{{ number_format($quote->total_ht ?? 0, 2, ',', ' ') }} €</span>
                     </div>
                     @if(!$isVatExempt)
                         @foreach($vatSummary as $vat)
                             <div class="total-row">
-                                <span class="total-label">TVA {{ $vat['rate'] }}%</span>
+                                <span class="total-label">{{ __('invoice.vat') }} {{ $vat['rate'] }}%</span>
                                 <span class="total-value">{{ number_format($vat['vat'], 2, ',', ' ') }} €</span>
                             </div>
                         @endforeach
                         <div class="total-row">
-                            <span class="total-label">Total TTC</span>
+                            <span class="total-label">{{ __('invoice.total') }}</span>
                             <span class="total-value">{{ number_format($quote->total_ttc ?? 0, 2, ',', ' ') }} €</span>
                         </div>
                     @endif
@@ -512,8 +512,8 @@
 
                 @if($isVatExempt)
                     <div class="vat-notice">
-                        TVA non applicable, art. 57 du Code de la TVA luxembourgeois<br>
-                        (Régime de franchise de taxe)
+                        {{ __('invoice.vat_exempt') }}<br>
+                        ({{ __('invoice.vat_exempt_franchise') }})
                     </div>
                 @endif
             </div>
@@ -521,11 +521,11 @@
 
         <!-- Notes Section -->
         <div class="notes-section">
-            <div class="thanks-message">Merci de votre confiance !</div>
+            <div class="thanks-message">{{ __('invoice.thank_you') }}</div>
             <div class="notes-content">
-                Ce devis est établi sur la base des informations communiquées.
-                Les prix indiqués sont valables pour la durée mentionnée ci-dessus.
-                Pour accepter ce devis, veuillez nous le retourner signé avec la mention "Bon pour accord".
+                {{ __('invoice.quote_info') }}
+                {{ __('invoice.quote_prices_valid') }}
+                {{ __('invoice.quote_accept') }}
             </div>
         </div>
     </div>
@@ -538,7 +538,7 @@
                     Créé avec <a href="https://faktur.lu">faktur.lu</a> — Facturation simplifiée pour le Luxembourg
                 </div>
             @endif
-            <div class="footer-page">1/1</div>
+            <div class="footer-page">{{ __('invoice.page') }} 1/1</div>
         </div>
     </div>
 </div>

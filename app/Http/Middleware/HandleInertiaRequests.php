@@ -30,6 +30,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $locale = App::getLocale();
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -41,13 +43,38 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'info' => fn () => $request->session()->get('info'),
             ],
-            'locale' => App::getLocale(),
+            'locale' => $locale,
             'availableLocales' => [
                 'fr' => 'Français',
                 'de' => 'Deutsch',
                 'en' => 'English',
                 'lb' => 'Lëtzebuergesch',
             ],
+            'translations' => fn () => $this->getTranslations($locale),
         ];
+    }
+
+    /**
+     * Get translations for the given locale.
+     */
+    protected function getTranslations(string $locale): array
+    {
+        $appPath = lang_path("{$locale}/app.php");
+
+        if (file_exists($appPath)) {
+            return [
+                'app' => require $appPath,
+            ];
+        }
+
+        // Fallback to French
+        $fallbackPath = lang_path('fr/app.php');
+        if (file_exists($fallbackPath)) {
+            return [
+                'app' => require $fallbackPath,
+            ];
+        }
+
+        return [];
     }
 }

@@ -5,7 +5,9 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
+import { useTranslations } from '@/Composables/useTranslations';
 
+const { t } = useTranslations();
 const showingSidebar = ref(true);
 const page = usePage();
 
@@ -13,18 +15,18 @@ const stopImpersonation = () => {
     router.post(route('admin.impersonation.stop'));
 };
 
-const navigation = [
-    { name: 'Dashboard', href: 'dashboard', icon: 'chart-bar' },
-    { name: 'Clients', href: 'clients.index', icon: 'users' },
-    { name: 'Devis', href: 'quotes.index', icon: 'clipboard-list' },
-    { name: 'Factures', href: 'invoices.index', icon: 'document-text' },
-    { name: 'Dépenses', href: 'expenses.index', icon: 'credit-card' },
-    { name: 'Temps', href: 'time-entries.index', icon: 'clock' },
-    { name: 'Recettes', href: 'reports.revenue-book', icon: 'book-open' },
-    { name: 'Export FAIA', href: 'exports.audit.index', icon: 'document-download' },
-    { name: 'Archivage', href: 'archive.index', icon: 'archive' },
-    { name: 'Réglages', href: 'settings.business.edit', icon: 'cog' },
-];
+const navigation = computed(() => [
+    { name: t('dashboard'), href: 'dashboard', icon: 'chart-bar' },
+    { name: t('clients'), href: 'clients.index', icon: 'users' },
+    { name: t('quotes'), href: 'quotes.index', icon: 'clipboard-list' },
+    { name: t('invoices'), href: 'invoices.index', icon: 'document-text' },
+    { name: t('expenses'), href: 'expenses.index', icon: 'credit-card' },
+    { name: t('time_tracking'), href: 'time-entries.index', icon: 'clock' },
+    { name: t('revenue_book'), href: 'reports.revenue-book', icon: 'book-open' },
+    { name: t('faia_export'), href: 'exports.audit.index', icon: 'document-download' },
+    { name: t('archive'), href: 'archive.index', icon: 'archive' },
+    { name: t('settings'), href: 'settings.business.edit', icon: 'cog' },
+]);
 
 const isCurrentRoute = (routeName) => {
     try {
@@ -52,13 +54,13 @@ const routeExists = (routeName) => {
             class="fixed top-0 left-0 right-0 z-[100] bg-purple-600 px-4 py-2 text-center text-sm text-white"
         >
             <span>
-                Vous êtes connecté en tant que <strong>{{ page.props.impersonating.user_name }}</strong>
+                {{ t('logged_in_as') }} <strong>{{ page.props.impersonating.user_name }}</strong>
             </span>
             <button
                 @click="stopImpersonation"
                 class="ml-4 rounded bg-white px-3 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50"
             >
-                Retourner au panel admin
+                {{ t('return_to_admin') }}
             </button>
         </div>
 
@@ -202,10 +204,10 @@ const routeExists = (routeName) => {
 
                         <template #content>
                             <DropdownLink :href="route('profile.edit')">
-                                Profil
+                                {{ t('profile') }}
                             </DropdownLink>
                             <DropdownLink :href="route('logout')" method="post" as="button">
-                                Déconnexion
+                                {{ t('logout') }}
                             </DropdownLink>
                         </template>
                     </Dropdown>

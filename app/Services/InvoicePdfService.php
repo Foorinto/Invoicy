@@ -29,11 +29,11 @@ class InvoicePdfService
     /**
      * Generate PDF preview as HTML.
      */
-    public function preview(Invoice $invoice): string
+    public function preview(Invoice $invoice, ?string $localeOverride = null): string
     {
         $this->ensureFinalized($invoice);
 
-        $data = $this->prepareData($invoice);
+        $data = $this->prepareData($invoice, $localeOverride);
 
         return view('pdf.invoice', $data)->render();
     }
@@ -41,9 +41,9 @@ class InvoicePdfService
     /**
      * Generate draft preview as HTML (for brouillons).
      */
-    public function previewDraft(Invoice $invoice): string
+    public function previewDraft(Invoice $invoice, ?string $localeOverride = null): string
     {
-        $data = $this->prepareDraftData($invoice);
+        $data = $this->prepareDraftData($invoice, $localeOverride);
 
         return view('pdf.invoice', $data)->render();
     }
@@ -51,9 +51,9 @@ class InvoicePdfService
     /**
      * Download draft invoice as PDF.
      */
-    public function downloadDraft(Invoice $invoice): Response
+    public function downloadDraft(Invoice $invoice, ?string $localeOverride = null): Response
     {
-        $pdf = $this->createDraftPdf($invoice);
+        $pdf = $this->createDraftPdf($invoice, $localeOverride);
         $filename = "brouillon-facture-{$invoice->id}.pdf";
 
         return $pdf->download($filename);
@@ -62,9 +62,9 @@ class InvoicePdfService
     /**
      * Stream draft invoice as PDF.
      */
-    public function streamDraft(Invoice $invoice): Response
+    public function streamDraft(Invoice $invoice, ?string $localeOverride = null): Response
     {
-        $pdf = $this->createDraftPdf($invoice);
+        $pdf = $this->createDraftPdf($invoice, $localeOverride);
         $filename = "brouillon-facture-{$invoice->id}.pdf";
 
         return $pdf->stream($filename);
@@ -73,9 +73,9 @@ class InvoicePdfService
     /**
      * Create PDF instance for draft invoice.
      */
-    protected function createDraftPdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    protected function createDraftPdf(Invoice $invoice, ?string $localeOverride = null): \Barryvdh\DomPDF\PDF
     {
-        $data = $this->prepareDraftData($invoice);
+        $data = $this->prepareDraftData($invoice, $localeOverride);
 
         return Pdf::loadView('pdf.invoice', $data)
             ->setPaper('a4')
@@ -89,11 +89,11 @@ class InvoicePdfService
     /**
      * Stream PDF for download.
      */
-    public function stream(Invoice $invoice): Response
+    public function stream(Invoice $invoice, ?string $localeOverride = null): Response
     {
         $this->ensureFinalized($invoice);
 
-        $pdf = $this->createPdf($invoice);
+        $pdf = $this->createPdf($invoice, $localeOverride);
         $filename = $this->getFilename($invoice);
 
         return $pdf->stream($filename);
@@ -102,11 +102,11 @@ class InvoicePdfService
     /**
      * Download PDF.
      */
-    public function download(Invoice $invoice): Response
+    public function download(Invoice $invoice, ?string $localeOverride = null): Response
     {
         $this->ensureFinalized($invoice);
 
-        $pdf = $this->createPdf($invoice);
+        $pdf = $this->createPdf($invoice, $localeOverride);
         $filename = $this->getFilename($invoice);
 
         return $pdf->download($filename);
@@ -115,19 +115,19 @@ class InvoicePdfService
     /**
      * Get PDF content as string.
      */
-    public function getContent(Invoice $invoice): string
+    public function getContent(Invoice $invoice, ?string $localeOverride = null): string
     {
         $this->ensureFinalized($invoice);
 
-        return $this->createPdf($invoice)->output();
+        return $this->createPdf($invoice, $localeOverride)->output();
     }
 
     /**
      * Create PDF instance.
      */
-    protected function createPdf(Invoice $invoice): \Barryvdh\DomPDF\PDF
+    protected function createPdf(Invoice $invoice, ?string $localeOverride = null): \Barryvdh\DomPDF\PDF
     {
-        $data = $this->prepareData($invoice);
+        $data = $this->prepareData($invoice, $localeOverride);
 
         return Pdf::loadView('pdf.invoice', $data)
             ->setPaper('a4')
@@ -141,16 +141,19 @@ class InvoicePdfService
     /**
      * Prepare data for PDF template.
      * IMPORTANT: Uses snapshots for immutability.
+     *
+     * @param Invoice $invoice
+     * @param string|null $localeOverride Optional locale to override client's preference
      */
-    public function prepareData(Invoice $invoice): array
+    public function prepareData(Invoice $invoice, ?string $localeOverride = null): array
     {
         $invoice->load('items');
 
         $seller = $invoice->seller_snapshot ?? [];
         $buyer = $invoice->buyer_snapshot ?? [];
 
-        // Set locale based on client's preference
-        $locale = $buyer['locale'] ?? 'fr';
+        // Set locale based on override or client's preference
+        $locale = $localeOverride ?? $buyer['locale'] ?? 'fr';
         $this->setLocale($locale);
 
         // Determine if VAT exempt (franchise regime)
@@ -200,8 +203,11 @@ class InvoicePdfService
     /**
      * Prepare data for draft preview (live preview before finalization).
      * Uses current data instead of snapshots.
+     *
+     * @param Invoice $invoice
+     * @param string|null $localeOverride Optional locale to override client's preference
      */
-    public function prepareDraftData(Invoice $invoice): array
+    public function prepareDraftData(Invoice $invoice, ?string $localeOverride = null): array
     {
         $invoice->load(['items', 'client']);
 
@@ -237,7 +243,7 @@ class InvoicePdfService
 
         // Get current client data for buyer info
         $client = $invoice->client;
-        $locale = $client?->locale ?? 'fr';
+        $locale = $localeOverride ?? $client?->locale ?? 'fr';
         $this->setLocale($locale);
 
         $buyer = $client ? [

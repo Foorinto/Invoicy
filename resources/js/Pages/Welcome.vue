@@ -1,6 +1,9 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 defineProps({
     canLogin: {
@@ -13,89 +16,89 @@ defineProps({
 
 const mobileMenuOpen = ref(false);
 
-const features = [
+const features = computed(() => [
     {
-        title: 'Facturation conforme',
-        description: 'Numérotation séquentielle légale et mentions obligatoires automatiques pour le Luxembourg.',
+        title: t('landing.features.items.invoicing.title'),
+        description: t('landing.features.items.invoicing.description'),
         icon: 'document',
         color: 'bg-[#9b5de5]',
     },
     {
-        title: 'Gestion clients',
-        description: 'Fichier clients complet avec validation TVA intracommunautaire.',
+        title: t('landing.features.items.clients.title'),
+        description: t('landing.features.items.clients.description'),
         icon: 'users',
         color: 'bg-[#00bbf9]',
     },
     {
-        title: 'Devis en un clic',
-        description: 'Créez des devis professionnels et convertissez-les en factures instantanément.',
+        title: t('landing.features.items.quotes.title'),
+        description: t('landing.features.items.quotes.description'),
         icon: 'clipboard',
         color: 'bg-[#f15bb5]',
     },
     {
-        title: 'Avoirs liés',
-        description: 'Émettez des avoirs avec traçabilité complète et conformité légale.',
+        title: t('landing.features.items.credit_notes.title'),
+        description: t('landing.features.items.credit_notes.description'),
         icon: 'refresh',
         color: 'bg-[#00f5d4]',
     },
     {
-        title: 'Suivi du temps',
-        description: 'Saisissez vos heures et facturez automatiquement le temps passé.',
+        title: t('landing.features.items.time_tracking.title'),
+        description: t('landing.features.items.time_tracking.description'),
         icon: 'clock',
         color: 'bg-[#fee440]',
     },
     {
-        title: 'Export FAIA',
-        description: 'Exportez vos données au format FAIA pour l\'Administration des contributions.',
+        title: t('landing.features.items.faia.title'),
+        description: t('landing.features.items.faia.description'),
         icon: 'download',
         color: 'bg-[#9b5de5]',
     },
-];
+]);
 
-const steps = [
+const steps = computed(() => [
     {
         number: '01',
-        title: 'Créez votre compte',
-        description: 'Inscription gratuite en quelques secondes. Configurez vos informations d\'entreprise.',
+        title: t('landing.how_it_works.steps.step1.title'),
+        description: t('landing.how_it_works.steps.step1.description'),
     },
     {
         number: '02',
-        title: 'Ajoutez vos clients',
-        description: 'Importez ou créez votre fichier clients avec leurs informations de facturation.',
+        title: t('landing.how_it_works.steps.step2.title'),
+        description: t('landing.how_it_works.steps.step2.description'),
     },
     {
         number: '03',
-        title: 'Facturez en un clic',
-        description: 'Créez des factures conformes, générez le PDF et envoyez par email.',
+        title: t('landing.how_it_works.steps.step3.title'),
+        description: t('landing.how_it_works.steps.step3.description'),
     },
-];
+]);
 
-const faqs = [
+const faqs = computed(() => [
     {
-        question: 'Qu\'est-ce que le format FAIA ?',
-        answer: 'Le FAIA (Fichier d\'Audit Informatisé AED) est le format standard exigé par l\'Administration des contributions directes du Luxembourg pour les contrôles fiscaux. faktur.lu génère automatiquement ce fichier à partir de vos factures.',
+        question: t('landing.faq.items.faia.question'),
+        answer: t('landing.faq.items.faia.answer'),
     },
     {
-        question: 'Les factures sont-elles conformes à la législation luxembourgeoise ?',
-        answer: 'Oui, toutes les factures générées incluent automatiquement les mentions obligatoires : numéro de TVA, numéro RCS, matricule, numérotation séquentielle, et toutes les informations requises par la loi.',
+        question: t('landing.faq.items.compliant.question'),
+        answer: t('landing.faq.items.compliant.answer'),
     },
     {
-        question: 'Puis-je créer des avoirs ?',
-        answer: 'Oui, vous pouvez créer des avoirs (notes de crédit) liés à vos factures existantes. Le système maintient la traçabilité complète entre factures et avoirs.',
+        question: t('landing.faq.items.credit_notes.question'),
+        answer: t('landing.faq.items.credit_notes.answer'),
     },
     {
-        question: 'Comment fonctionne le suivi du temps ?',
-        answer: 'Vous pouvez enregistrer vos heures de travail par client et par projet. Ensuite, en un clic, transformez ces entrées de temps en lignes de facture avec le tarif horaire défini.',
+        question: t('landing.faq.items.time_tracking.question'),
+        answer: t('landing.faq.items.time_tracking.answer'),
     },
     {
-        question: 'Mes données sont-elles sécurisées ?',
-        answer: 'Vos données sont hébergées en Europe sur des serveurs sécurisés avec sauvegardes automatiques quotidiennes. L\'accès est protégé par authentification et les connexions sont chiffrées.',
+        question: t('landing.faq.items.security.question'),
+        answer: t('landing.faq.items.security.answer'),
     },
     {
-        question: 'Puis-je essayer gratuitement ?',
-        answer: 'Oui, le plan Découverte est entièrement gratuit et vous permet de créer jusqu\'à 5 factures par mois pour 3 clients. Idéal pour tester la solution avant de passer à un plan supérieur.',
+        question: t('landing.faq.items.free_trial.question'),
+        answer: t('landing.faq.items.free_trial.answer'),
     },
-];
+]);
 
 const openFaq = ref(null);
 
@@ -105,7 +108,7 @@ const toggleFaq = (index) => {
 </script>
 
 <template>
-    <Head title="Facturation simplifiée pour le Luxembourg" />
+    <Head :title="t('landing.page_title')" />
 
     <div class="min-h-screen bg-slate-50">
         <!-- Header -->
@@ -125,19 +128,19 @@ const toggleFaq = (index) => {
                     <!-- Desktop Navigation -->
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="#features" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            Fonctionnalités
+                            {{ t('landing.nav.features') }}
                         </a>
                         <a href="#how-it-works" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            Comment ça marche
+                            {{ t('landing.nav.how_it_works') }}
                         </a>
                         <a href="#pricing" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            Tarifs
+                            {{ t('landing.nav.pricing') }}
                         </a>
                         <a href="#faq" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            FAQ
+                            {{ t('landing.nav.faq') }}
                         </a>
                         <Link :href="route('faia-validator')" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            Validateur FAIA
+                            {{ t('landing.nav.faia_validator') }}
                         </Link>
                     </div>
 
@@ -148,21 +151,21 @@ const toggleFaq = (index) => {
                             :href="route('dashboard')"
                             class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                         >
-                            Tableau de bord
+                            {{ t('landing.nav.dashboard') }}
                         </Link>
                         <template v-else>
                             <Link
                                 :href="route('login')"
                                 class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                             >
-                                Connexion
+                                {{ t('landing.nav.login') }}
                             </Link>
                             <Link
                                 v-if="canRegister"
                                 :href="route('register')"
                                 class="bg-[#9b5de5] hover:bg-[#8b4ed5] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
                             >
-                                Créer un compte
+                                {{ t('landing.nav.create_account') }}
                             </Link>
                         </template>
                     </div>
@@ -182,14 +185,14 @@ const toggleFaq = (index) => {
                 <!-- Mobile menu -->
                 <div v-if="mobileMenuOpen" class="md:hidden py-4 border-t border-slate-200">
                     <div class="flex flex-col space-y-3">
-                        <a href="#features" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Fonctionnalités</a>
-                        <a href="#how-it-works" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Comment ça marche</a>
-                        <a href="#pricing" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Tarifs</a>
-                        <a href="#faq" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">FAQ</a>
-                        <Link :href="route('faia-validator')" @click="mobileMenuOpen = false" class="text-sm font-medium text-[#9b5de5] hover:text-[#8b4ed5] py-2">Validateur FAIA gratuit</Link>
+                        <a href="#features" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">{{ t('landing.nav.features') }}</a>
+                        <a href="#how-it-works" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">{{ t('landing.nav.how_it_works') }}</a>
+                        <a href="#pricing" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">{{ t('landing.nav.pricing') }}</a>
+                        <a href="#faq" @click="mobileMenuOpen = false" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">{{ t('landing.nav.faq') }}</a>
+                        <Link :href="route('faia-validator')" @click="mobileMenuOpen = false" class="text-sm font-medium text-[#9b5de5] hover:text-[#8b4ed5] py-2">{{ t('landing.nav.faia_validator') }}</Link>
                         <template v-if="canLogin && !$page.props.auth.user">
-                            <Link :href="route('login')" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">Connexion</Link>
-                            <Link v-if="canRegister" :href="route('register')" class="bg-[#9b5de5] text-white text-sm font-semibold px-5 py-3 rounded-xl text-center">Créer un compte</Link>
+                            <Link :href="route('login')" class="text-sm font-medium text-slate-600 hover:text-slate-900 py-2">{{ t('landing.nav.login') }}</Link>
+                            <Link v-if="canRegister" :href="route('register')" class="bg-[#9b5de5] text-white text-sm font-semibold px-5 py-3 rounded-xl text-center">{{ t('landing.nav.create_account') }}</Link>
                         </template>
                     </div>
                 </div>
@@ -207,17 +210,17 @@ const toggleFaq = (index) => {
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                             </svg>
-                            Conforme Luxembourg
+                            {{ t('landing.hero.badge') }}
                         </div>
 
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-                            La facturation
-                            <span class="text-[#9b5de5]">simplifiée</span>
-                            pour le Luxembourg
+                            {{ t('landing.hero.title_1') }}
+                            <span class="text-[#9b5de5]">{{ t('landing.hero.title_2') }}</span>
+                            {{ t('landing.hero.title_3') }}
                         </h1>
 
                         <p class="mt-6 text-lg text-slate-600 leading-relaxed">
-                            Créez des factures conformes en quelques clics. Gérez clients, devis et avoirs depuis une interface moderne et intuitive.
+                            {{ t('landing.hero.subtitle') }}
                         </p>
 
                         <div class="mt-10 flex flex-col sm:flex-row items-start gap-4">
@@ -226,7 +229,7 @@ const toggleFaq = (index) => {
                                 :href="route('register')"
                                 class="inline-flex items-center gap-2 bg-[#9b5de5] hover:bg-[#8b4ed5] text-white font-semibold px-6 py-3.5 rounded-xl transition-colors"
                             >
-                                Commencer gratuitement
+                                {{ t('landing.hero.cta_start') }}
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
@@ -236,7 +239,7 @@ const toggleFaq = (index) => {
                                 :href="route('login')"
                                 class="inline-flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium px-6 py-3.5 transition-colors"
                             >
-                                Se connecter
+                                {{ t('landing.hero.cta_login') }}
                                 <span class="text-[#00bbf9]">→</span>
                             </Link>
                         </div>
@@ -247,13 +250,13 @@ const toggleFaq = (index) => {
                                 <svg class="w-5 h-5 text-[#00f5d4]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
-                                Export FAIA
+                                {{ t('landing.hero.badge_faia') }}
                             </div>
                             <div class="flex items-center gap-2">
                                 <svg class="w-5 h-5 text-[#00f5d4]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
-                                Données sécurisées
+                                {{ t('landing.hero.badge_secure') }}
                             </div>
                         </div>
                     </div>
@@ -275,11 +278,11 @@ const toggleFaq = (index) => {
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-xs text-slate-500">Facture</p>
+                                        <p class="text-xs text-slate-500">{{ t('landing.preview.invoice') }}</p>
                                         <p class="font-bold text-slate-900">F-2026-001</p>
                                     </div>
                                 </div>
-                                <span class="px-3 py-1 rounded-full bg-[#00f5d4]/10 text-[#00a896] text-xs font-medium">Payée</span>
+                                <span class="px-3 py-1 rounded-full bg-[#00f5d4]/10 text-[#00a896] text-xs font-medium">{{ t('landing.preview.paid') }}</span>
                             </div>
 
                             <!-- Items -->
@@ -287,14 +290,14 @@ const toggleFaq = (index) => {
                                 <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-lg bg-[#00bbf9] flex items-center justify-center text-white text-xs font-bold">10h</div>
-                                        <span class="text-sm text-slate-700">Développement web</span>
+                                        <span class="text-sm text-slate-700">{{ t('landing.preview.web_dev') }}</span>
                                     </div>
                                     <span class="text-sm font-semibold text-slate-900">850 €</span>
                                 </div>
                                 <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-lg bg-[#f15bb5] flex items-center justify-center text-white text-xs font-bold">5h</div>
-                                        <span class="text-sm text-slate-700">Design UI/UX</span>
+                                        <span class="text-sm text-slate-700">{{ t('landing.preview.ui_design') }}</span>
                                     </div>
                                     <span class="text-sm font-semibold text-slate-900">250 €</span>
                                 </div>
@@ -302,9 +305,9 @@ const toggleFaq = (index) => {
 
                             <!-- Total -->
                             <div class="pt-4 border-t border-slate-100 flex justify-between items-end">
-                                <div class="text-xs text-slate-500">TVA 17% : 187 €</div>
+                                <div class="text-xs text-slate-500">{{ t('landing.preview.vat') }} : 187 €</div>
                                 <div class="text-right">
-                                    <p class="text-xs text-slate-500">Total TTC</p>
+                                    <p class="text-xs text-slate-500">{{ t('landing.preview.total_ttc') }}</p>
                                     <p class="text-2xl font-bold text-[#9b5de5]">1 287 €</p>
                                 </div>
                             </div>
@@ -319,7 +322,7 @@ const toggleFaq = (index) => {
                                     </svg>
                                 </div>
                                 <div class="text-xs">
-                                    <p class="text-slate-500">Ce mois</p>
+                                    <p class="text-slate-500">{{ t('landing.preview.this_month') }}</p>
                                     <p class="font-bold text-slate-900">+12 450 €</p>
                                 </div>
                             </div>
@@ -333,7 +336,7 @@ const toggleFaq = (index) => {
                                     </svg>
                                 </div>
                                 <div class="text-xs">
-                                    <p class="text-slate-500">Factures payées</p>
+                                    <p class="text-slate-500">{{ t('landing.preview.invoices_paid') }}</p>
                                     <p class="font-bold text-slate-900">24 / 24</p>
                                 </div>
                             </div>
@@ -346,31 +349,31 @@ const toggleFaq = (index) => {
         <!-- Logos / Trust Section -->
         <section class="py-12 border-y border-slate-200 bg-white">
             <div class="mx-auto max-w-6xl px-6 lg:px-8">
-                <p class="text-center text-sm text-slate-500 mb-8">Conforme aux exigences de</p>
+                <p class="text-center text-sm text-slate-500 mb-8">{{ t('landing.trust.compliant_with') }}</p>
                 <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
                     <div class="flex items-center gap-3 text-slate-400">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                         </svg>
-                        <span class="font-medium">Luxembourg AED</span>
+                        <span class="font-medium">{{ t('landing.trust.luxembourg_aed') }}</span>
                     </div>
                     <div class="flex items-center gap-3 text-slate-400">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/>
                         </svg>
-                        <span class="font-medium">Format FAIA</span>
+                        <span class="font-medium">{{ t('landing.trust.faia_format') }}</span>
                     </div>
                     <div class="flex items-center gap-3 text-slate-400">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
                         </svg>
-                        <span class="font-medium">RGPD</span>
+                        <span class="font-medium">{{ t('landing.trust.gdpr') }}</span>
                     </div>
                     <div class="flex items-center gap-3 text-slate-400">
                         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
                         </svg>
-                        <span class="font-medium">TVA Intracommunautaire</span>
+                        <span class="font-medium">{{ t('landing.trust.intra_vat') }}</span>
                     </div>
                 </div>
             </div>
@@ -380,12 +383,12 @@ const toggleFaq = (index) => {
         <section id="features" class="py-20">
             <div class="mx-auto max-w-6xl px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <p class="text-[#f15bb5] font-semibold mb-3">Fonctionnalités</p>
+                    <p class="text-[#f15bb5] font-semibold mb-3">{{ t('landing.features.title') }}</p>
                     <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                        Tout ce qu'il vous faut
+                        {{ t('landing.features.heading') }}
                     </h2>
                     <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                        Une solution complète pour gérer votre facturation au Luxembourg.
+                        {{ t('landing.features.subtitle') }}
                     </p>
                 </div>
 
@@ -430,12 +433,12 @@ const toggleFaq = (index) => {
         <section id="how-it-works" class="py-20 bg-white">
             <div class="mx-auto max-w-6xl px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <p class="text-[#00bbf9] font-semibold mb-3">Comment ça marche</p>
+                    <p class="text-[#00bbf9] font-semibold mb-3">{{ t('landing.how_it_works.title') }}</p>
                     <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                        Facturez en 3 étapes
+                        {{ t('landing.how_it_works.heading') }}
                     </h2>
                     <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                        Une prise en main rapide pour vous concentrer sur votre activité.
+                        {{ t('landing.how_it_works.subtitle') }}
                     </p>
                 </div>
 
@@ -456,7 +459,7 @@ const toggleFaq = (index) => {
                         :href="route('register')"
                         class="inline-flex items-center gap-2 bg-[#9b5de5] hover:bg-[#8b4ed5] text-white font-semibold px-6 py-3.5 rounded-xl transition-colors"
                     >
-                        Créer mon compte gratuit
+                        {{ t('landing.how_it_works.cta') }}
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
@@ -472,19 +475,19 @@ const toggleFaq = (index) => {
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         <div class="text-center">
                             <p class="text-4xl sm:text-5xl font-bold text-white">100%</p>
-                            <p class="mt-2 text-white/70">Conforme FAIA</p>
+                            <p class="mt-2 text-white/70">{{ t('landing.stats.faia_compliant') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-4xl sm:text-5xl font-bold text-[#fee440]">17%</p>
-                            <p class="mt-2 text-white/70">TVA Luxembourg</p>
+                            <p class="mt-2 text-white/70">{{ t('landing.stats.vat_luxembourg') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-4xl sm:text-5xl font-bold text-white">∞</p>
-                            <p class="mt-2 text-white/70">Factures possibles</p>
+                            <p class="mt-2 text-white/70">{{ t('landing.stats.unlimited_invoices') }}</p>
                         </div>
                         <div class="text-center">
                             <p class="text-4xl sm:text-5xl font-bold text-[#00f5d4]">24/7</p>
-                            <p class="mt-2 text-white/70">Accès en ligne</p>
+                            <p class="mt-2 text-white/70">{{ t('landing.stats.online_access') }}</p>
                         </div>
                     </div>
                 </div>
@@ -495,12 +498,12 @@ const toggleFaq = (index) => {
         <section id="pricing" class="py-20 bg-white">
             <div class="mx-auto max-w-6xl px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <p class="text-[#00bbf9] font-semibold mb-3">Tarification</p>
+                    <p class="text-[#00bbf9] font-semibold mb-3">{{ t('landing.pricing.title') }}</p>
                     <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                        Simple et transparent
+                        {{ t('landing.pricing.heading') }}
                     </h2>
                     <p class="text-lg text-slate-600">
-                        Des offres adaptées à votre activité.
+                        {{ t('landing.pricing.subtitle') }}
                     </p>
                 </div>
 
@@ -508,30 +511,30 @@ const toggleFaq = (index) => {
                     <!-- Plan Gratuit -->
                     <div class="bg-slate-50 rounded-3xl p-8">
                         <div class="mb-6">
-                            <h3 class="text-xl font-semibold text-slate-900">Découverte</h3>
-                            <p class="text-slate-500 mt-1">Pour démarrer</p>
+                            <h3 class="text-xl font-semibold text-slate-900">{{ t('landing.pricing.plans.discovery.name') }}</h3>
+                            <p class="text-slate-500 mt-1">{{ t('landing.pricing.plans.discovery.description') }}</p>
                         </div>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold text-slate-900">Gratuit</span>
+                            <span class="text-4xl font-bold text-slate-900">{{ t('landing.pricing.plans.discovery.price') }}</span>
                         </div>
                         <ul class="space-y-4 mb-8">
                             <li class="flex items-center gap-3 text-slate-700">
                                 <svg class="w-5 h-5 text-[#00f5d4] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                5 factures / mois
+                                {{ t('landing.pricing.plans.discovery.features.0') }}
                             </li>
                             <li class="flex items-center gap-3 text-slate-700">
                                 <svg class="w-5 h-5 text-[#00f5d4] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                3 clients
+                                {{ t('landing.pricing.plans.discovery.features.1') }}
                             </li>
                             <li class="flex items-center gap-3 text-slate-700">
                                 <svg class="w-5 h-5 text-[#00f5d4] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Export PDF
+                                {{ t('landing.pricing.plans.discovery.features.2') }}
                             </li>
                         </ul>
                         <Link
@@ -539,46 +542,46 @@ const toggleFaq = (index) => {
                             :href="route('register')"
                             class="block w-full py-3.5 text-center font-semibold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
                         >
-                            Commencer
+                            {{ t('landing.pricing.start') }}
                         </Link>
                     </div>
 
                     <!-- Plan Pro -->
                     <div class="bg-[#9b5de5] rounded-3xl p-8 relative">
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-                            <span class="px-4 py-1.5 text-xs font-bold bg-[#fee440] text-slate-900 rounded-full">POPULAIRE</span>
+                            <span class="px-4 py-1.5 text-xs font-bold bg-[#fee440] text-slate-900 rounded-full">{{ t('landing.pricing.popular') }}</span>
                         </div>
                         <div class="mb-6">
-                            <h3 class="text-xl font-semibold text-white">Professionnel</h3>
-                            <p class="text-white/70 mt-1">Pour les indépendants</p>
+                            <h3 class="text-xl font-semibold text-white">{{ t('landing.pricing.plans.professional.name') }}</h3>
+                            <p class="text-white/70 mt-1">{{ t('landing.pricing.plans.professional.description') }}</p>
                         </div>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold text-white">À venir</span>
+                            <span class="text-4xl font-bold text-white">{{ t('landing.pricing.plans.professional.price') }}</span>
                         </div>
                         <ul class="space-y-4 mb-8">
                             <li class="flex items-center gap-3 text-white/90">
                                 <svg class="w-5 h-5 text-[#fee440] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Factures illimitées
+                                {{ t('landing.pricing.plans.professional.features.0') }}
                             </li>
                             <li class="flex items-center gap-3 text-white/90">
                                 <svg class="w-5 h-5 text-[#fee440] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Clients illimités
+                                {{ t('landing.pricing.plans.professional.features.1') }}
                             </li>
                             <li class="flex items-center gap-3 text-white/90">
                                 <svg class="w-5 h-5 text-[#fee440] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Export FAIA
+                                {{ t('landing.pricing.plans.professional.features.2') }}
                             </li>
                             <li class="flex items-center gap-3 text-white/90">
                                 <svg class="w-5 h-5 text-[#fee440] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Suivi du temps
+                                {{ t('landing.pricing.plans.professional.features.3') }}
                             </li>
                         </ul>
                         <Link
@@ -586,47 +589,47 @@ const toggleFaq = (index) => {
                             :href="route('register')"
                             class="block w-full py-3.5 text-center font-semibold text-[#9b5de5] bg-white rounded-xl hover:bg-slate-50 transition-colors"
                         >
-                            S'inscrire
+                            {{ t('landing.pricing.sign_up') }}
                         </Link>
                     </div>
 
                     <!-- Plan Entreprise -->
                     <div class="bg-slate-50 rounded-3xl p-8">
                         <div class="mb-6">
-                            <h3 class="text-xl font-semibold text-slate-900">Entreprise</h3>
-                            <p class="text-slate-500 mt-1">Pour les équipes</p>
+                            <h3 class="text-xl font-semibold text-slate-900">{{ t('landing.pricing.plans.enterprise.name') }}</h3>
+                            <p class="text-slate-500 mt-1">{{ t('landing.pricing.plans.enterprise.description') }}</p>
                         </div>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold text-slate-400">À venir</span>
+                            <span class="text-4xl font-bold text-slate-400">{{ t('landing.pricing.plans.enterprise.price') }}</span>
                         </div>
                         <ul class="space-y-4 mb-8">
                             <li class="flex items-center gap-3 text-slate-500">
                                 <svg class="w-5 h-5 text-[#00bbf9] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Multi-utilisateurs
+                                {{ t('landing.pricing.plans.enterprise.features.0') }}
                             </li>
                             <li class="flex items-center gap-3 text-slate-500">
                                 <svg class="w-5 h-5 text-[#00bbf9] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Gestion des rôles
+                                {{ t('landing.pricing.plans.enterprise.features.1') }}
                             </li>
                             <li class="flex items-center gap-3 text-slate-500">
                                 <svg class="w-5 h-5 text-[#00bbf9] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Support prioritaire
+                                {{ t('landing.pricing.plans.enterprise.features.2') }}
                             </li>
                             <li class="flex items-center gap-3 text-slate-500">
                                 <svg class="w-5 h-5 text-[#00bbf9] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                API access
+                                {{ t('landing.pricing.plans.enterprise.features.3') }}
                             </li>
                         </ul>
                         <button disabled class="block w-full py-3.5 text-center font-semibold text-slate-400 border-2 border-slate-200 rounded-xl cursor-not-allowed">
-                            Bientôt disponible
+                            {{ t('landing.pricing.coming_soon') }}
                         </button>
                     </div>
                 </div>
@@ -637,12 +640,12 @@ const toggleFaq = (index) => {
         <section id="faq" class="py-20">
             <div class="mx-auto max-w-3xl px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <p class="text-[#f15bb5] font-semibold mb-3">FAQ</p>
+                    <p class="text-[#f15bb5] font-semibold mb-3">{{ t('landing.faq.title') }}</p>
                     <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                        Questions fréquentes
+                        {{ t('landing.faq.heading') }}
                     </h2>
                     <p class="text-lg text-slate-600">
-                        Tout ce que vous devez savoir sur faktur.lu
+                        {{ t('landing.faq.subtitle') }}
                     </p>
                 </div>
 
@@ -689,17 +692,17 @@ const toggleFaq = (index) => {
 
                     <div class="relative">
                         <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
-                            Prêt à simplifier votre facturation ?
+                            {{ t('landing.cta.heading') }}
                         </h2>
                         <p class="text-lg text-white/80 mb-10 max-w-xl mx-auto">
-                            Rejoignez les entrepreneurs luxembourgeois qui font confiance à faktur.lu
+                            {{ t('landing.cta.subtitle') }}
                         </p>
                         <Link
                             v-if="canRegister"
                             :href="route('register')"
                             class="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#9b5de5] font-semibold rounded-xl hover:bg-slate-50 transition-colors"
                         >
-                            Créer mon compte gratuit
+                            {{ t('landing.cta.button') }}
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                             </svg>
@@ -723,24 +726,24 @@ const toggleFaq = (index) => {
                             <span class="font-bold text-slate-900">faktur.lu</span>
                         </div>
                         <p class="text-slate-600 text-sm max-w-xs">
-                            La solution de facturation moderne et conforme pour les entrepreneurs au Luxembourg.
+                            {{ t('landing.footer.description') }}
                         </p>
                     </div>
                     <div>
-                        <h4 class="font-semibold text-slate-900 mb-4">Produit</h4>
+                        <h4 class="font-semibold text-slate-900 mb-4">{{ t('landing.footer.product') }}</h4>
                         <ul class="space-y-2 text-sm">
-                            <li><a href="#features" class="text-slate-600 hover:text-slate-900">Fonctionnalités</a></li>
-                            <li><a href="#pricing" class="text-slate-600 hover:text-slate-900">Tarifs</a></li>
-                            <li><a href="#faq" class="text-slate-600 hover:text-slate-900">FAQ</a></li>
-                            <li><Link :href="route('faia-validator')" class="text-slate-600 hover:text-slate-900">Validateur FAIA</Link></li>
+                            <li><a href="#features" class="text-slate-600 hover:text-slate-900">{{ t('landing.nav.features') }}</a></li>
+                            <li><a href="#pricing" class="text-slate-600 hover:text-slate-900">{{ t('landing.nav.pricing') }}</a></li>
+                            <li><a href="#faq" class="text-slate-600 hover:text-slate-900">{{ t('landing.nav.faq') }}</a></li>
+                            <li><Link :href="route('faia-validator')" class="text-slate-600 hover:text-slate-900">{{ t('landing.nav.faia_validator') }}</Link></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-semibold text-slate-900 mb-4">Conformité</h4>
+                        <h4 class="font-semibold text-slate-900 mb-4">{{ t('landing.footer.compliance') }}</h4>
                         <ul class="space-y-2 text-sm">
-                            <li class="text-slate-600">Export FAIA</li>
-                            <li class="text-slate-600">TVA Luxembourg</li>
-                            <li class="text-slate-600">RGPD</li>
+                            <li class="text-slate-600">{{ t('landing.footer.faia_export') }}</li>
+                            <li class="text-slate-600">{{ t('landing.footer.vat_luxembourg') }}</li>
+                            <li class="text-slate-600">{{ t('landing.footer.gdpr') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -752,10 +755,10 @@ const toggleFaq = (index) => {
                             </svg>
                             FAIA
                         </span>
-                        Conforme aux exigences luxembourgeoises
+                        {{ t('landing.footer.faia_compliant') }}
                     </div>
                     <p class="text-sm text-slate-500">
-                        © 2026 faktur.lu. Tous droits réservés.
+                        {{ t('landing.footer.copyright') }}
                     </p>
                 </div>
             </div>
