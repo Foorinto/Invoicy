@@ -339,10 +339,9 @@
 
         /* Branding footer for Starter plan */
         .branding-footer {
-            position: fixed;
-            bottom: 25px;
-            left: 0;
-            right: 0;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e5e5;
             text-align: center;
             font-size: 8pt;
             color: #9ca3af;
@@ -563,18 +562,18 @@
                 </div>
             @endif
         </div>
+
+        {{-- Branding for Starter (free) plan users --}}
+        @if($showBranding ?? false)
+        <div class="branding-footer">
+            Créé avec <a href="https://faktur.lu">faktur.lu</a> — Facturation simplifiée pour le Luxembourg
+        </div>
+        @endif
     </div>
 
     <!-- Footer -->
     <div class="footer">
         <div class="page-number">1/1</div>
     </div>
-
-    {{-- Branding for Starter (free) plan users --}}
-    @if($showBranding ?? false)
-    <div class="branding-footer">
-        Créé avec <a href="https://faktur.lu">faktur.lu</a> — Facturation simplifiée pour le Luxembourg
-    </div>
-    @endif
 </body>
 </html>
