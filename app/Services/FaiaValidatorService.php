@@ -508,6 +508,7 @@ class FaiaValidatorService
     protected function validateSalesInvoices(): void
     {
         $invoices = $this->getElements('//faia:SourceDocuments/faia:SalesInvoices/faia:Invoice')
+            ?? $this->getElements('//faia:SalesInvoices/faia:Invoice')
             ?? $this->getElements('//SalesInvoices/Invoice')
             ?? $this->getElements('//Invoices/Invoice');
 
