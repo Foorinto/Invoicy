@@ -1,8 +1,11 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import axios from 'axios';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     invoices: Object,
@@ -22,26 +25,55 @@ const previewHtml = ref('');
 const loadingPreview = ref(false);
 const previewInvoice = ref(null);
 
-const openPreview = async (invoice) => {
-    previewInvoice.value = invoice;
-    showPreviewModal.value = true;
+// PDF language selection
+const pdfLocale = ref('fr');
+
+const pdfLanguages = [
+    { value: 'fr', label: 'Français', flag: '🇫🇷' },
+    { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { value: 'en', label: 'English', flag: '🇬🇧' },
+    { value: 'lb', label: 'Lëtzebuergesch', flag: '🇱🇺' },
+];
+
+const pdfUrl = computed(() => {
+    if (!previewInvoice.value) return '';
+    const baseUrl = previewInvoice.value.status === 'draft'
+        ? route('invoices.draft-pdf', previewInvoice.value.id)
+        : route('invoices.pdf.stream', previewInvoice.value.id);
+    return `${baseUrl}?locale=${pdfLocale.value}`;
+});
+
+const loadPreview = async () => {
+    if (!previewInvoice.value) return;
     loadingPreview.value = true;
 
     try {
-        if (invoice.status === 'draft') {
-            const response = await axios.get(route('invoices.preview-draft', invoice.id));
-            previewHtml.value = response.data.html;
-        } else {
-            // For finalized invoices, use the preview-html endpoint
-            const response = await axios.get(route('invoices.preview-html', invoice.id));
-            previewHtml.value = response.data.html;
-        }
+        const routeName = previewInvoice.value.status === 'draft'
+            ? 'invoices.preview-draft'
+            : 'invoices.preview-html';
+        const url = route(routeName, previewInvoice.value.id) + `?locale=${pdfLocale.value}`;
+        const response = await axios.get(url);
+        previewHtml.value = response.data.html;
     } catch (error) {
         console.error('Error loading preview:', error);
-        previewHtml.value = '<p style="color: red; padding: 20px;">Erreur lors du chargement de l\'aperçu</p>';
+        previewHtml.value = `<p style="color: red; padding: 20px;">${t('error_loading_preview')}</p>`;
     } finally {
         loadingPreview.value = false;
     }
+};
+
+const changePdfLanguage = (locale) => {
+    pdfLocale.value = locale;
+    if (showPreviewModal.value) {
+        loadPreview();
+    }
+};
+
+const openPreview = async (invoice) => {
+    previewInvoice.value = invoice;
+    pdfLocale.value = invoice.client?.locale || 'fr';
+    showPreviewModal.value = true;
+    loadPreview();
 };
 
 const closePreview = () => {
@@ -76,11 +108,11 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusLabel = (status) => {
     const labels = {
-        draft: 'Brouillon',
-        finalized: 'Finalisée',
-        sent: 'Envoyée',
-        paid: 'Payée',
-        cancelled: 'Annulée',
+        draft: t('draft'),
+        finalized: t('finalized'),
+        sent: t('sent'),
+        paid: t('paid'),
+        cancelled: t('cancelled'),
     };
     return labels[status] || status;
 };
@@ -135,13 +167,13 @@ const changeStatus = (invoice, newStatus) => {
 </script>
 
 <template>
-    <Head title="Factures" />
+    <Head :title="t('invoices')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Factures
+                    {{ t('invoices') }}
                 </h1>
                 <Link
                     :href="route('invoices.create')"
@@ -150,7 +182,7 @@ const changeStatus = (invoice, newStatus) => {
                     <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                     </svg>
-                    Nouvelle facture
+                    {{ t('new_invoice') }}
                 </Link>
             </div>
         </template>
@@ -161,7 +193,7 @@ const changeStatus = (invoice, newStatus) => {
                 v-model="statusFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Tous les statuts</option>
+                <option value="">{{ t('all_statuses') }}</option>
                 <option v-for="status in statuses" :key="status.value" :value="status.value">
                     {{ status.label }}
                 </option>
@@ -171,7 +203,7 @@ const changeStatus = (invoice, newStatus) => {
                 v-model="yearFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Toutes les années</option>
+                <option value="">{{ t('all_years') }}</option>
                 <option v-for="year in years" :key="year" :value="year">
                     {{ year }}
                 </option>
@@ -181,7 +213,7 @@ const changeStatus = (invoice, newStatus) => {
                 v-model="clientFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Tous les clients</option>
+                <option value="">{{ t('all_clients') }}</option>
                 <option v-for="client in clients" :key="client.id" :value="client.id">
                     {{ client.name }}
                 </option>
@@ -194,25 +226,25 @@ const changeStatus = (invoice, newStatus) => {
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                            N°
+                            {{ t('number') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Client
+                            {{ t('client') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell">
-                            Date
+                            {{ t('date') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                            Échéance
+                            {{ t('due_date') }}
                         </th>
                         <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                            Total TTC
+                            {{ t('total') }} {{ t('ttc') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Statut
+                            {{ t('status') }}
                         </th>
                         <th class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
+                            <span class="sr-only">{{ t('actions') }}</span>
                         </th>
                     </tr>
                 </thead>
@@ -222,12 +254,12 @@ const changeStatus = (invoice, newStatus) => {
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p class="mt-2">Aucune facture trouvée.</p>
+                            <p class="mt-2">{{ t('no_invoices') }}</p>
                             <Link
                                 :href="route('invoices.create')"
                                 class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                             >
-                                Créer votre première facture
+                                {{ t('create_first_invoice') }}
                             </Link>
                         </td>
                     </tr>
@@ -240,7 +272,7 @@ const changeStatus = (invoice, newStatus) => {
                                 <span v-if="invoice.type === 'credit_note'" class="text-red-600 dark:text-red-400">
                                     NC-
                                 </span>
-                                {{ invoice.number || 'BROUILLON' }}
+                                {{ invoice.number || t('draft').toUpperCase() }}
                             </Link>
                             <p v-if="invoice.title" class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                                 {{ invoice.title }}
@@ -299,7 +331,7 @@ const changeStatus = (invoice, newStatus) => {
                                     type="button"
                                     @click="openPreview(invoice)"
                                     class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                    title="Aperçu"
+                                    :title="t('preview')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.573-3.007-9.963-7.178z" />
@@ -311,7 +343,7 @@ const changeStatus = (invoice, newStatus) => {
                                     :href="invoice.status === 'draft' ? route('invoices.draft-pdf', invoice.id) : route('invoices.pdf.stream', invoice.id)"
                                     target="_blank"
                                     class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                    title="Télécharger PDF"
+                                    :title="t('download_pdf')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -322,7 +354,7 @@ const changeStatus = (invoice, newStatus) => {
                                     v-if="invoice.status === 'draft'"
                                     :href="route('invoices.edit', invoice.id)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                    title="Modifier"
+                                    :title="t('edit')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -333,7 +365,7 @@ const changeStatus = (invoice, newStatus) => {
                                     v-else
                                     :href="route('invoices.show', invoice.id)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                    title="Voir"
+                                    :title="t('view')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -346,12 +378,12 @@ const changeStatus = (invoice, newStatus) => {
                                     method="post"
                                     as="button"
                                     class="inline-flex items-center gap-1 text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                                    title="Finaliser"
+                                    :title="t('finalize')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span class="text-sm">Finaliser</span>
+                                    <span class="text-sm">{{ t('finalize') }}</span>
                                 </Link>
                             </div>
                         </td>
@@ -363,7 +395,7 @@ const changeStatus = (invoice, newStatus) => {
         <!-- Pagination -->
         <div v-if="invoices.links && invoices.links.length > 3" class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-700 dark:text-gray-400">
-                Affichage de {{ invoices.from }} à {{ invoices.to }} sur {{ invoices.total }} factures
+                {{ t('showing_x_to_y_of_z', { from: invoices.from, to: invoices.to, total: invoices.total, items: t('invoices').toLowerCase() }) }}
             </div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
                 <template v-for="(link, index) in invoices.links" :key="index">
@@ -394,11 +426,27 @@ const changeStatus = (invoice, newStatus) => {
                     <!-- Modal header -->
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Aperçu - {{ previewInvoice?.number || 'Brouillon' }}
+                            <span v-if="previewInvoice?.type === 'credit_note'" class="text-red-600 dark:text-red-400">NC-</span>{{ previewInvoice?.number || t('draft') }}
                         </h3>
                         <div class="flex items-center space-x-2">
+                            <!-- Language selector -->
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+                                <button
+                                    v-for="lang in pdfLanguages"
+                                    :key="lang.value"
+                                    type="button"
+                                    @click="changePdfLanguage(lang.value)"
+                                    :title="lang.label"
+                                    class="px-2 py-1.5 text-base transition-colors"
+                                    :class="pdfLocale === lang.value
+                                        ? 'bg-indigo-100 dark:bg-indigo-900'
+                                        : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                                >
+                                    {{ lang.flag }}
+                                </button>
+                            </div>
                             <a
-                                :href="previewInvoice?.status === 'draft' ? route('invoices.draft-pdf', previewInvoice?.id) : route('invoices.pdf.stream', previewInvoice?.id)"
+                                :href="pdfUrl"
                                 target="_blank"
                                 class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
                             >
@@ -440,7 +488,7 @@ const changeStatus = (invoice, newStatus) => {
                             @click="closePreview"
                             class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500"
                         >
-                            Fermer
+                            {{ t('close') }}
                         </button>
                     </div>
                 </div>

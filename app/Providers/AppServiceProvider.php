@@ -81,6 +81,15 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
+        // Preview HTML - 60/minute (moins coûteux que PDF)
+        RateLimiter::for('preview', function (Request $request) {
+            return Limit::perMinute(60)
+                ->by($request->user()?->id ?: $request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return $this->rateLimitResponse($headers, 'Trop de previews. Veuillez patienter.');
+                });
+        });
+
         // Export FAIA - 5/heure (très coûteux)
         RateLimiter::for('export', function (Request $request) {
             return Limit::perHour(5)

@@ -1,13 +1,65 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import axios from 'axios';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     quote: Object,
 });
 
 const processing = ref(false);
+
+// Preview modal state
+const showPreviewModal = ref(false);
+const previewHtml = ref('');
+const loadingPreview = ref(false);
+
+// PDF language selection
+const pdfLocale = ref(props.quote.buyer_snapshot?.locale || props.quote.client?.locale || 'fr');
+
+const pdfLanguages = [
+    { value: 'fr', label: 'Français', flag: '🇫🇷' },
+    { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { value: 'en', label: 'English', flag: '🇬🇧' },
+    { value: 'lb', label: 'Lëtzebuergesch', flag: '🇱🇺' },
+];
+
+const pdfUrl = computed(() => {
+    const baseUrl = route('quotes.pdf.stream', props.quote.id);
+    return `${baseUrl}?locale=${pdfLocale.value}`;
+});
+
+// Load preview with locale
+const loadPreview = async () => {
+    loadingPreview.value = true;
+    try {
+        const url = route('quotes.preview-html', props.quote.id) + `?locale=${pdfLocale.value}`;
+        const response = await axios.get(url);
+        previewHtml.value = response.data.html;
+    } catch (error) {
+        console.error('Error loading preview:', error);
+        previewHtml.value = `<p style="color: red; padding: 20px;">${t('error_loading_preview')}</p>`;
+    } finally {
+        loadingPreview.value = false;
+    }
+};
+
+// Reload preview when language changes
+const changePdfLanguage = (locale) => {
+    pdfLocale.value = locale;
+    if (showPreviewModal.value) {
+        loadPreview();
+    }
+};
+
+const openPreview = () => {
+    showPreviewModal.value = true;
+    loadPreview();
+};
 
 const getStatusBadgeClass = (status) => {
     const classes = {
@@ -21,16 +73,17 @@ const getStatusBadgeClass = (status) => {
     return classes[status] || classes.draft;
 };
 
+const statusLabels = computed(() => ({
+    draft: t('draft'),
+    sent: t('sent'),
+    accepted: t('accepted'),
+    declined: t('rejected'),
+    expired: t('expired'),
+    converted: t('converted'),
+}));
+
 const getStatusLabel = (status) => {
-    const labels = {
-        draft: 'Brouillon',
-        sent: 'Envoyé',
-        accepted: 'Accepté',
-        declined: 'Refusé',
-        expired: 'Expiré',
-        converted: 'Converti',
-    };
-    return labels[status] || status;
+    return statusLabels.value[status] || status;
 };
 
 const formatCurrency = (amount, currency = 'EUR') => {
@@ -65,7 +118,7 @@ const markAsDeclined = () => {
 
 const convertToInvoice = () => {
     if (processing.value) return;
-    if (!confirm('Convertir ce devis en facture ? Une nouvelle facture brouillon sera créée avec les mêmes lignes.')) {
+    if (!confirm(t('convert_quote_confirm'))) {
         return;
     }
     processing.value = true;
@@ -103,18 +156,18 @@ const convertToInvoice = () => {
                 </div>
 
                 <div class="flex items-center space-x-3">
-                    <!-- PDF Download -->
-                    <a
-                        :href="route('quotes.pdf.stream', quote.id)"
-                        target="_blank"
+                    <!-- Preview Button -->
+                    <button
+                        type="button"
+                        @click="openPreview"
                         class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
-                        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
-                            <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                        <svg class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                            <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                         </svg>
-                        PDF
-                    </a>
+                        {{ t('preview') }}
+                    </button>
 
                     <!-- Mark as Accepted -->
                     <button
@@ -126,7 +179,7 @@ const convertToInvoice = () => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                         </svg>
-                        Accepter
+                        {{ t('accept') }}
                     </button>
 
                     <!-- Mark as Declined -->
@@ -139,7 +192,7 @@ const convertToInvoice = () => {
                         <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
                         </svg>
-                        Refuser
+                        {{ t('reject') }}
                     </button>
 
                     <!-- Convert to Invoice -->
@@ -153,7 +206,7 @@ const convertToInvoice = () => {
                             <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
                             <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
                         </svg>
-                        Convertir en facture
+                        {{ t('convert_to_invoice') }}
                     </button>
                 </div>
             </div>
@@ -165,7 +218,7 @@ const convertToInvoice = () => {
                 <!-- Seller Info -->
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Émetteur</h2>
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('issuer') }}</h2>
                     </div>
                     <div class="px-6 py-4">
                         <div v-if="quote.seller_snapshot" class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -175,14 +228,14 @@ const convertToInvoice = () => {
                             <p>{{ quote.seller_snapshot.postal_code }} {{ quote.seller_snapshot.city }}</p>
                             <p>{{ quote.seller_snapshot.country }}</p>
                             <p class="pt-2" v-if="quote.seller_snapshot.matricule">
-                                <span class="text-gray-500">Matricule:</span> {{ quote.seller_snapshot.matricule }}
+                                <span class="text-gray-500">{{ t('matricule') }}:</span> {{ quote.seller_snapshot.matricule }}
                             </p>
                             <p v-if="quote.seller_snapshot.vat_number">
-                                <span class="text-gray-500">N° TVA:</span> {{ quote.seller_snapshot.vat_number }}
+                                <span class="text-gray-500">{{ t('vat_number_short') }}:</span> {{ quote.seller_snapshot.vat_number }}
                             </p>
                         </div>
                         <div v-else class="text-sm text-gray-500 dark:text-gray-400">
-                            Informations vendeur non enregistrées
+                            {{ t('seller_info_not_recorded') }}
                         </div>
                     </div>
                 </div>
@@ -190,7 +243,7 @@ const convertToInvoice = () => {
                 <!-- Buyer Info -->
                 <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Client</h2>
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('client') }}</h2>
                     </div>
                     <div class="px-6 py-4">
                         <div v-if="quote.buyer_snapshot" class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -200,7 +253,7 @@ const convertToInvoice = () => {
                             <p>{{ quote.buyer_snapshot.postal_code }} {{ quote.buyer_snapshot.city }}</p>
                             <p>{{ quote.buyer_snapshot.country }}</p>
                             <p v-if="quote.buyer_snapshot.vat_number" class="pt-2">
-                                <span class="text-gray-500">N° TVA:</span> {{ quote.buyer_snapshot.vat_number }}
+                                <span class="text-gray-500">{{ t('vat_number_short') }}:</span> {{ quote.buyer_snapshot.vat_number }}
                             </p>
                         </div>
                         <div v-else-if="quote.client" class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -217,38 +270,38 @@ const convertToInvoice = () => {
             <!-- Quote Details -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Détails</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('details') }}</h2>
                 </div>
                 <div class="px-6 py-4">
                     <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Date de création</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('created_at') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(quote.created_at) }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Valide jusqu'au</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('valid_until') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(quote.valid_until) }}</dd>
                         </div>
                         <div v-if="quote.sent_at">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Envoyé le</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('sent_on') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(quote.sent_at) }}</dd>
                         </div>
                         <div v-if="quote.accepted_at">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Accepté le</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('accepted_on') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(quote.accepted_at) }}</dd>
                         </div>
                         <div v-if="quote.declined_at">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Refusé le</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('rejected_on') }}</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(quote.declined_at) }}</dd>
                         </div>
                         <div v-if="quote.converted_to_invoice_id">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Converti en facture</dt>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('converted_to_invoice') }}</dt>
                             <dd class="mt-1 text-sm">
                                 <Link
                                     :href="route('invoices.show', quote.converted_to_invoice_id)"
                                     class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                                 >
-                                    Voir la facture
+                                    {{ t('see_invoice') }}
                                 </Link>
                             </dd>
                         </div>
@@ -259,26 +312,26 @@ const convertToInvoice = () => {
             <!-- Quote Items -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Lignes du devis</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('quote_lines') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th class="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                                    Description
+                                    {{ t('description') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Qté
+                                    {{ t('qty') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Prix HT
+                                    {{ t('price_ht') }}
                                 </th>
                                 <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    TVA
+                                    {{ t('vat') }}
                                 </th>
                                 <th class="py-3.5 pl-3 pr-6 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                    Total HT
+                                    {{ t('total_ht') }}
                                 </th>
                             </tr>
                         </thead>
@@ -305,7 +358,7 @@ const convertToInvoice = () => {
                         <tfoot class="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <td colspan="4" class="py-3 pl-6 pr-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Total HT
+                                    {{ t('total_ht') }}
                                 </td>
                                 <td class="whitespace-nowrap py-3 pl-3 pr-6 text-right text-sm font-medium text-gray-900 dark:text-white">
                                     {{ formatCurrency(quote.total_ht, quote.currency) }}
@@ -313,7 +366,7 @@ const convertToInvoice = () => {
                             </tr>
                             <tr>
                                 <td colspan="4" class="py-3 pl-6 pr-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Total TVA
+                                    {{ t('total_vat') }}
                                 </td>
                                 <td class="whitespace-nowrap py-3 pl-3 pr-6 text-right text-sm font-medium text-gray-900 dark:text-white">
                                     {{ formatCurrency(quote.total_vat, quote.currency) }}
@@ -321,7 +374,7 @@ const convertToInvoice = () => {
                             </tr>
                             <tr class="border-t-2 border-gray-300 dark:border-gray-600">
                                 <td colspan="4" class="py-3 pl-6 pr-3 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                    Total TTC
+                                    {{ t('total_ttc') }}
                                 </td>
                                 <td class="whitespace-nowrap py-3 pl-3 pr-6 text-right text-sm font-bold text-gray-900 dark:text-white">
                                     {{ formatCurrency(quote.total_ttc, quote.currency) }}
@@ -335,10 +388,88 @@ const convertToInvoice = () => {
             <!-- Notes -->
             <div v-if="quote.notes" class="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Notes</h2>
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">{{ t('notes') }}</h2>
                 </div>
                 <div class="px-6 py-4">
                     <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ quote.notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Modal -->
+        <div v-if="showPreviewModal" class="fixed inset-0 z-50 overflow-hidden">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showPreviewModal = false"></div>
+
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                            {{ quote.reference }}
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <!-- Language selector -->
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+                                <button
+                                    v-for="lang in pdfLanguages"
+                                    :key="lang.value"
+                                    type="button"
+                                    @click="changePdfLanguage(lang.value)"
+                                    :title="lang.label"
+                                    class="px-2 py-1.5 text-base transition-colors"
+                                    :class="pdfLocale === lang.value
+                                        ? 'bg-indigo-100 dark:bg-indigo-900'
+                                        : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                                >
+                                    {{ lang.flag }}
+                                </button>
+                            </div>
+                            <a
+                                :href="pdfUrl"
+                                target="_blank"
+                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                            >
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                                    <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                                </svg>
+                                PDF
+                            </a>
+                            <button
+                                type="button"
+                                @click="showPreviewModal = false"
+                                class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="flex-1 overflow-auto p-6 bg-gray-100 dark:bg-gray-900">
+                        <div v-if="loadingPreview" class="flex items-center justify-center h-96">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        </div>
+                        <div
+                            v-else
+                            class="bg-white shadow-lg mx-auto"
+                            style="width: 210mm; min-height: 297mm; transform: scale(1); transform-origin: top center;"
+                            v-html="previewHtml"
+                        ></div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="flex items-center justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                        <button
+                            type="button"
+                            @click="showPreviewModal = false"
+                            class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500"
+                        >
+                            {{ t('close') }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

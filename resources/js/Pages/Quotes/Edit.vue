@@ -17,10 +17,37 @@ const props = defineProps({
 
 const defaultVatRate = props.isVatExempt ? 0 : 17;
 
+// Format date to yyyy-MM-dd for input[type="date"]
+const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+};
+
 const showPreviewModal = ref(false);
 const previewHtml = ref('');
 const loadingPreview = ref(false);
 const editingItemId = ref(null);
+
+// PDF language selection
+const pdfLocale = ref(props.quote.client?.locale || 'fr');
+
+const pdfLanguages = [
+    { value: 'fr', label: 'Français', flag: '🇫🇷' },
+    { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { value: 'en', label: 'English', flag: '🇬🇧' },
+    { value: 'lb', label: 'Lëtzebuergesch', flag: '🇱🇺' },
+];
+
+const selectedPdfLanguage = computed(() => {
+    return pdfLanguages.find(lang => lang.value === pdfLocale.value) || pdfLanguages[0];
+});
+
+const pdfUrl = computed(() => {
+    const baseUrl = route('quotes.pdf.stream', props.quote.id);
+    return `${baseUrl}?locale=${pdfLocale.value}`;
+});
 const editItemForm = useForm({
     title: '',
     description: '',
@@ -32,7 +59,7 @@ const editItemForm = useForm({
 
 const form = useForm({
     client_id: props.quote.client_id,
-    valid_until: props.quote.valid_until || '',
+    valid_until: formatDateForInput(props.quote.valid_until),
     notes: props.quote.notes || '',
     currency: props.quote.currency,
 });
@@ -192,17 +219,26 @@ const convertToInvoice = () => {
     });
 };
 
-// Load preview
+// Load preview with locale
 const loadPreview = async () => {
     loadingPreview.value = true;
     try {
-        const response = await axios.get(route('quotes.preview-html', props.quote.id));
+        const url = route('quotes.preview-html', props.quote.id) + `?locale=${pdfLocale.value}`;
+        const response = await axios.get(url);
         previewHtml.value = response.data.html;
     } catch (error) {
         console.error('Error loading preview:', error);
         previewHtml.value = '<p style="color: red; padding: 20px;">Erreur lors du chargement de l\'aperçu</p>';
     } finally {
         loadingPreview.value = false;
+    }
+};
+
+// Reload preview when language changes
+const changePdfLanguage = (locale) => {
+    pdfLocale.value = locale;
+    if (showPreviewModal.value) {
+        loadPreview();
     }
 };
 
@@ -703,8 +739,24 @@ const getStatusLabel = (status) => {
                             Aperçu du devis
                         </h3>
                         <div class="flex items-center space-x-2">
+                            <!-- Language selector -->
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+                                <button
+                                    v-for="lang in pdfLanguages"
+                                    :key="lang.value"
+                                    type="button"
+                                    @click="changePdfLanguage(lang.value)"
+                                    :title="lang.label"
+                                    class="px-2 py-1.5 text-base transition-colors"
+                                    :class="pdfLocale === lang.value
+                                        ? 'bg-indigo-100 dark:bg-indigo-900'
+                                        : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                                >
+                                    {{ lang.flag }}
+                                </button>
+                            </div>
                             <a
-                                :href="route('quotes.pdf.stream', quote.id)"
+                                :href="pdfUrl"
                                 target="_blank"
                                 class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
                             >

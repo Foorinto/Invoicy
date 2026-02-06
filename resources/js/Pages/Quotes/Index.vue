@@ -1,8 +1,11 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import axios from 'axios';
+import { useTranslations } from '@/Composables/useTranslations';
+
+const { t } = useTranslations();
 
 const props = defineProps({
     quotes: Object,
@@ -22,20 +25,50 @@ const previewHtml = ref('');
 const loadingPreview = ref(false);
 const previewQuote = ref(null);
 
-const openPreview = async (quote) => {
-    previewQuote.value = quote;
-    showPreviewModal.value = true;
+// PDF language selection
+const pdfLocale = ref('fr');
+
+const pdfLanguages = [
+    { value: 'fr', label: 'Français', flag: '🇫🇷' },
+    { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+    { value: 'en', label: 'English', flag: '🇬🇧' },
+    { value: 'lb', label: 'Lëtzebuergesch', flag: '🇱🇺' },
+];
+
+const pdfUrl = computed(() => {
+    if (!previewQuote.value) return '';
+    const baseUrl = route('quotes.pdf.stream', previewQuote.value.id);
+    return `${baseUrl}?locale=${pdfLocale.value}`;
+});
+
+const loadPreview = async () => {
+    if (!previewQuote.value) return;
     loadingPreview.value = true;
 
     try {
-        const response = await axios.get(route('quotes.preview-html', quote.id));
+        const url = route('quotes.preview-html', previewQuote.value.id) + `?locale=${pdfLocale.value}`;
+        const response = await axios.get(url);
         previewHtml.value = response.data.html;
     } catch (error) {
         console.error('Error loading preview:', error);
-        previewHtml.value = '<p style="color: red; padding: 20px;">Erreur lors du chargement de l\'aperçu</p>';
+        previewHtml.value = `<p style="color: red; padding: 20px;">${t('error_loading_preview')}</p>`;
     } finally {
         loadingPreview.value = false;
     }
+};
+
+const changePdfLanguage = (locale) => {
+    pdfLocale.value = locale;
+    if (showPreviewModal.value) {
+        loadPreview();
+    }
+};
+
+const openPreview = async (quote) => {
+    previewQuote.value = quote;
+    pdfLocale.value = quote.client?.locale || 'fr';
+    showPreviewModal.value = true;
+    loadPreview();
 };
 
 const closePreview = () => {
@@ -71,12 +104,12 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusLabel = (status) => {
     const labels = {
-        draft: 'Brouillon',
-        sent: 'Envoyé',
-        accepted: 'Accepté',
-        declined: 'Refusé',
-        expired: 'Expiré',
-        converted: 'Converti',
+        draft: t('draft'),
+        sent: t('sent'),
+        accepted: t('accepted'),
+        declined: t('rejected'),
+        expired: t('expired'),
+        converted: t('converted'),
     };
     return labels[status] || status;
 };
@@ -99,13 +132,13 @@ const canEdit = (quote) => {
 </script>
 
 <template>
-    <Head title="Devis" />
+    <Head :title="t('quotes')" />
 
     <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    Devis
+                    {{ t('quotes') }}
                 </h1>
                 <Link
                     :href="route('quotes.create')"
@@ -114,7 +147,7 @@ const canEdit = (quote) => {
                     <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                     </svg>
-                    Nouveau devis
+                    {{ t('new_quote') }}
                 </Link>
             </div>
         </template>
@@ -125,7 +158,7 @@ const canEdit = (quote) => {
                 v-model="statusFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Tous les statuts</option>
+                <option value="">{{ t('all_statuses') }}</option>
                 <option v-for="status in statuses" :key="status.value" :value="status.value">
                     {{ status.label }}
                 </option>
@@ -135,7 +168,7 @@ const canEdit = (quote) => {
                 v-model="yearFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Toutes les années</option>
+                <option value="">{{ t('all_years') }}</option>
                 <option v-for="year in years" :key="year" :value="year">
                     {{ year }}
                 </option>
@@ -145,7 +178,7 @@ const canEdit = (quote) => {
                 v-model="clientFilter"
                 class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 dark:bg-gray-800 dark:text-white dark:ring-gray-600 sm:text-sm"
             >
-                <option value="">Tous les clients</option>
+                <option value="">{{ t('all_clients') }}</option>
                 <option v-for="client in clients" :key="client.id" :value="client.id">
                     {{ client.name }}
                 </option>
@@ -158,25 +191,25 @@ const canEdit = (quote) => {
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                            Référence
+                            {{ t('reference') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Client
+                            {{ t('client') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell">
-                            Créé le
+                            {{ t('created_at') }}
                         </th>
                         <th class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
-                            Valide jusqu'au
+                            {{ t('due_date') }}
                         </th>
                         <th class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">
-                            Total TTC
+                            {{ t('total') }} {{ t('ttc') }}
                         </th>
                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                            Statut
+                            {{ t('status') }}
                         </th>
                         <th class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
+                            <span class="sr-only">{{ t('actions') }}</span>
                         </th>
                     </tr>
                 </thead>
@@ -186,12 +219,12 @@ const canEdit = (quote) => {
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p class="mt-2">Aucun devis trouvé.</p>
+                            <p class="mt-2">{{ t('no_quotes') }}</p>
                             <Link
                                 :href="route('quotes.create')"
                                 class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                             >
-                                Créer votre premier devis
+                                {{ t('create_first_quote') }}
                             </Link>
                         </td>
                     </tr>
@@ -231,7 +264,7 @@ const canEdit = (quote) => {
                                     type="button"
                                     @click="openPreview(quote)"
                                     class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                                    title="Aperçu"
+                                    :title="t('preview')"
                                 >
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.64 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.64 0-8.573-3.007-9.963-7.178z" />
@@ -244,14 +277,14 @@ const canEdit = (quote) => {
                                     :href="route('quotes.edit', quote.id)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
-                                    Modifier
+                                    {{ t('edit') }}
                                 </Link>
                                 <Link
                                     v-else
                                     :href="route('quotes.show', quote.id)"
                                     class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
-                                    Voir
+                                    {{ t('view') }}
                                 </Link>
                             </div>
                         </td>
@@ -263,7 +296,7 @@ const canEdit = (quote) => {
         <!-- Pagination -->
         <div v-if="quotes.links && quotes.links.length > 3" class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-700 dark:text-gray-400">
-                Affichage de {{ quotes.from }} à {{ quotes.to }} sur {{ quotes.total }} devis
+                {{ t('showing') }} {{ quotes.from }} {{ t('to') }} {{ quotes.to }} {{ t('of') }} {{ quotes.total }} {{ t('quotes').toLowerCase() }}
             </div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm">
                 <template v-for="(link, index) in quotes.links" :key="index">
@@ -294,11 +327,27 @@ const canEdit = (quote) => {
                     <!-- Modal header -->
                     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                            Aperçu - {{ previewQuote?.reference }}
+                            {{ previewQuote?.reference }}
                         </h3>
                         <div class="flex items-center space-x-2">
+                            <!-- Language selector -->
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden">
+                                <button
+                                    v-for="lang in pdfLanguages"
+                                    :key="lang.value"
+                                    type="button"
+                                    @click="changePdfLanguage(lang.value)"
+                                    :title="lang.label"
+                                    class="px-2 py-1.5 text-base transition-colors"
+                                    :class="pdfLocale === lang.value
+                                        ? 'bg-indigo-100 dark:bg-indigo-900'
+                                        : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'"
+                                >
+                                    {{ lang.flag }}
+                                </button>
+                            </div>
                             <a
-                                :href="route('quotes.pdf.stream', previewQuote?.id)"
+                                :href="pdfUrl"
                                 target="_blank"
                                 class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
                             >
@@ -340,7 +389,7 @@ const canEdit = (quote) => {
                             @click="closePreview"
                             class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-600 dark:text-white dark:ring-gray-500"
                         >
-                            Fermer
+                            {{ t('close') }}
                         </button>
                     </div>
                 </div>
