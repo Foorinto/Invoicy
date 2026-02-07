@@ -69,7 +69,8 @@ class SendPaymentReminders implements ShouldQueue
      */
     protected function processInvoiceReminder(Invoice $invoice, array $reminderLevels, User $user): void
     {
-        $daysOverdue = now()->startOfDay()->diffInDays($invoice->due_at->startOfDay());
+        // Nombre de jours depuis l'échéance (positif si en retard)
+        $daysOverdue = $invoice->due_at->startOfDay()->diffInDays(now()->startOfDay(), false);
 
         // Determine which reminder level to send
         $levelToSend = null;
