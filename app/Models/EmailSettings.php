@@ -5,13 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Crypt;
 
 class EmailSettings extends Model
 {
     use HasFactory;
 
+    public const PROVIDER_FAKTUR = 'faktur';
+    public const PROVIDER_SMTP = 'smtp';
+    public const PROVIDER_POSTMARK = 'postmark';
+    public const PROVIDER_RESEND = 'resend';
+
+    public const PROVIDERS = [
+        self::PROVIDER_FAKTUR => 'faktur.lu (recommandé)',
+        self::PROVIDER_SMTP => 'Serveur SMTP personnel',
+        self::PROVIDER_POSTMARK => 'Postmark',
+        self::PROVIDER_RESEND => 'Resend',
+    ];
+
     protected $fillable = [
         'user_id',
+        'provider',
+        'provider_config',
+        'from_address',
+        'from_name',
+        'provider_verified',
+        'last_test_at',
         'default_message',
         'signature',
         'send_copy_to_self',
@@ -23,6 +42,12 @@ class EmailSettings extends Model
         'send_copy_to_self' => 'boolean',
         'reminders_enabled' => 'boolean',
         'reminder_levels' => 'array',
+        'provider_verified' => 'boolean',
+        'last_test_at' => 'datetime',
+    ];
+
+    protected $hidden = [
+        'provider_config',
     ];
 
     /**
@@ -73,7 +98,118 @@ class EmailSettings extends Model
     {
         return self::firstOrCreate(
             ['user_id' => $user->id],
-            ['reminder_levels' => self::defaultReminderLevels()]
+            [
+                'provider' => self::PROVIDER_FAKTUR,
+                'reminder_levels' => self::defaultReminderLevels(),
+            ]
         );
+    }
+
+    /**
+     * Set the provider configuration (encrypted).
+     */
+    public function setProviderConfigAttribute(?array $value): void
+    {
+        if ($value === null) {
+            $this->attributes['provider_config'] = null;
+            return;
+        }
+
+        $this->attributes['provider_config'] = Crypt::encryptString(json_encode($value));
+    }
+
+    /**
+     * Get the provider configuration (decrypted).
+     */
+    public function getProviderConfigAttribute(?string $value): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        try {
+            return json_decode(Crypt::decryptString($value), true);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get the effective from address.
+     */
+    public function getEffectiveFromAddress(): string
+    {
+        if ($this->from_address) {
+            return $this->from_address;
+        }
+
+        return config('mail.from.address', 'factures@faktur.lu');
+    }
+
+    /**
+     * Get the effective from name.
+     */
+    public function getEffectiveFromName(): ?string
+    {
+        if ($this->from_name) {
+            return $this->from_name;
+        }
+
+        return $this->user?->businessSettings?->company_name
+            ?? config('mail.from.name');
+    }
+
+    /**
+     * Check if using a custom provider.
+     */
+    public function hasCustomProvider(): bool
+    {
+        return $this->provider !== self::PROVIDER_FAKTUR;
+    }
+
+    /**
+     * Check if provider requires configuration.
+     */
+    public function requiresConfiguration(): bool
+    {
+        return in_array($this->provider, [
+            self::PROVIDER_SMTP,
+            self::PROVIDER_POSTMARK,
+            self::PROVIDER_RESEND,
+        ]);
+    }
+
+    /**
+     * Get SMTP configuration fields.
+     */
+    public static function getSmtpConfigFields(): array
+    {
+        return [
+            'host' => ['label' => 'Serveur SMTP', 'type' => 'text', 'required' => true],
+            'port' => ['label' => 'Port', 'type' => 'number', 'required' => true, 'default' => 587],
+            'encryption' => ['label' => 'Chiffrement', 'type' => 'select', 'options' => ['tls' => 'TLS', 'ssl' => 'SSL', '' => 'Aucun'], 'default' => 'tls'],
+            'username' => ['label' => 'Nom d\'utilisateur', 'type' => 'text', 'required' => true],
+            'password' => ['label' => 'Mot de passe', 'type' => 'password', 'required' => true],
+        ];
+    }
+
+    /**
+     * Get Postmark configuration fields.
+     */
+    public static function getPostmarkConfigFields(): array
+    {
+        return [
+            'token' => ['label' => 'Server Token', 'type' => 'password', 'required' => true],
+        ];
+    }
+
+    /**
+     * Get Resend configuration fields.
+     */
+    public static function getResendConfigFields(): array
+    {
+        return [
+            'api_key' => ['label' => 'Clé API', 'type' => 'password', 'required' => true],
+        ];
     }
 }

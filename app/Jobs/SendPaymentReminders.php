@@ -7,6 +7,7 @@ use App\Models\EmailSettings;
 use App\Models\Invoice;
 use App\Models\InvoiceEmail;
 use App\Models\User;
+use App\Services\EmailProviderService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,7 +23,7 @@ class SendPaymentReminders implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(EmailProviderService $emailProviderService): void
     {
         // Get all users with reminders enabled
         $users = User::whereHas('emailSettings', function ($query) {
@@ -30,14 +31,14 @@ class SendPaymentReminders implements ShouldQueue
         })->get();
 
         foreach ($users as $user) {
-            $this->processUserReminders($user);
+            $this->processUserReminders($user, $emailProviderService);
         }
     }
 
     /**
      * Process reminders for a specific user.
      */
-    protected function processUserReminders(User $user): void
+    protected function processUserReminders(User $user, EmailProviderService $emailProviderService): void
     {
         $settings = $user->emailSettings;
         if (!$settings || !$settings->reminders_enabled) {
@@ -60,14 +61,14 @@ class SendPaymentReminders implements ShouldQueue
             ->get();
 
         foreach ($overdueInvoices as $invoice) {
-            $this->processInvoiceReminder($invoice, $reminderLevels, $user);
+            $this->processInvoiceReminder($invoice, $reminderLevels, $user, $emailProviderService);
         }
     }
 
     /**
      * Process reminder for a specific invoice.
      */
-    protected function processInvoiceReminder(Invoice $invoice, array $reminderLevels, User $user): void
+    protected function processInvoiceReminder(Invoice $invoice, array $reminderLevels, User $user, EmailProviderService $emailProviderService): void
     {
         // Nombre de jours depuis l'échéance (positif si en retard)
         $daysOverdue = $invoice->due_at->startOfDay()->diffInDays(now()->startOfDay(), false);
@@ -122,10 +123,13 @@ class SendPaymentReminders implements ShouldQueue
         $message = $this->replaceVariables($levelConfig['body'] ?? '', $invoice, $daysOverdue, $user);
 
         try {
+            // Get the mailer for this user (uses their configured provider)
+            $mailer = $emailProviderService->getMailerForUser($user);
+
             $mail = new ReminderMail($invoice, $levelToSend, $message);
             $mail->subject($subject);
 
-            Mail::to($recipientEmail)->send($mail);
+            $mailer->to($recipientEmail)->send($mail);
 
             // Record the email
             $invoice->emails()->create([

@@ -7,6 +7,7 @@ use App\Mail\ReminderMail;
 use App\Models\EmailSettings;
 use App\Models\Invoice;
 use App\Models\InvoiceEmail;
+use App\Services\EmailProviderService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +15,9 @@ use Inertia\Inertia;
 
 class InvoiceEmailController extends Controller
 {
+    public function __construct(
+        protected EmailProviderService $emailProviderService
+    ) {}
     /**
      * Send an invoice by email.
      */
@@ -42,15 +46,18 @@ class InvoiceEmailController extends Controller
         $sendCopyToSelf = $validated['send_copy_to_self'] ?? false;
 
         try {
+            // Get the mailer for this user (uses their configured provider)
+            $mailer = $this->emailProviderService->getMailerForUser($request->user());
+
             // Send the email
             $mail = new InvoiceMail($invoice, $customMessage);
             $mail->subject($subject);
 
-            Mail::to($recipientEmail)->send($mail);
+            $mailer->to($recipientEmail)->send($mail);
 
             // Send copy to self if requested
             if ($sendCopyToSelf) {
-                Mail::to($request->user()->email)->send($mail);
+                $mailer->to($request->user()->email)->send($mail);
             }
 
             // Determine email type
@@ -201,11 +208,14 @@ class InvoiceEmailController extends Controller
         $message = $validated['message'];
 
         try {
+            // Get the mailer for this user (uses their configured provider)
+            $mailer = $this->emailProviderService->getMailerForUser($request->user());
+
             // Send the reminder email
             $mail = new ReminderMail($invoice, $level, $message);
             $mail->subject($subject);
 
-            Mail::to($recipientEmail)->send($mail);
+            $mailer->to($recipientEmail)->send($mail);
 
             // Determine reminder type
             $type = match ($level) {

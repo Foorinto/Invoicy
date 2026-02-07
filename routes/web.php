@@ -8,6 +8,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FaiaValidatorController;
+use App\Http\Controllers\EmailProviderController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceEmailController;
 use App\Http\Controllers\InvoiceItemController;
@@ -128,6 +129,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Email settings (no special rate limit)
     Route::get('/settings/email', [InvoiceEmailController::class, 'settings'])->name('settings.email');
     Route::put('/settings/email', [InvoiceEmailController::class, 'updateSettings'])->name('settings.email.update');
+
+    // Email provider settings
+    Route::get('/settings/email/provider', [EmailProviderController::class, 'index'])->name('settings.email.provider');
+    Route::put('/settings/email/provider', [EmailProviderController::class, 'update'])->name('settings.email.provider.update');
+    Route::post('/settings/email/provider/test', [EmailProviderController::class, 'test'])->name('settings.email.provider.test');
+    Route::post('/settings/email/provider/validate-smtp', [EmailProviderController::class, 'validateSmtp'])->name('settings.email.provider.validate-smtp');
 
     // Invoice email history
     Route::get('/invoices/{invoice}/emails', [InvoiceEmailController::class, 'history'])->name('invoices.emails');
