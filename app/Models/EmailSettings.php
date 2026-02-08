@@ -13,12 +13,14 @@ class EmailSettings extends Model
 
     public const PROVIDER_FAKTUR = 'faktur';
     public const PROVIDER_SMTP = 'smtp';
+    public const PROVIDER_BREVO = 'brevo';
     public const PROVIDER_POSTMARK = 'postmark';
     public const PROVIDER_RESEND = 'resend';
 
     public const PROVIDERS = [
         self::PROVIDER_FAKTUR => 'faktur.lu (recommandé)',
         self::PROVIDER_SMTP => 'Serveur SMTP personnel',
+        self::PROVIDER_BREVO => 'Brevo (Sendinblue)',
         self::PROVIDER_POSTMARK => 'Postmark',
         self::PROVIDER_RESEND => 'Resend',
     ];
@@ -174,6 +176,7 @@ class EmailSettings extends Model
     {
         return in_array($this->provider, [
             self::PROVIDER_SMTP,
+            self::PROVIDER_BREVO,
             self::PROVIDER_POSTMARK,
             self::PROVIDER_RESEND,
         ]);
@@ -210,6 +213,17 @@ class EmailSettings extends Model
     {
         return [
             'api_key' => ['label' => 'Clé API', 'type' => 'password', 'required' => true],
+        ];
+    }
+
+    /**
+     * Get Brevo configuration fields.
+     */
+    public static function getBrevoConfigFields(): array
+    {
+        return [
+            'username' => ['label' => 'Login SMTP (votre email)', 'type' => 'email', 'required' => true],
+            'api_key' => ['label' => 'Clé SMTP', 'type' => 'password', 'required' => true, 'help' => 'Disponible dans Brevo → Paramètres → SMTP & API'],
         ];
     }
 }

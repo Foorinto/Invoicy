@@ -10,6 +10,7 @@ const props = defineProps({
     settings: Object,
     providers: Object,
     smtpFields: Object,
+    brevoFields: Object,
     postmarkFields: Object,
     resendFields: Object,
     userEmail: String,
@@ -30,6 +31,8 @@ const currentConfigFields = computed(() => {
     switch (form.provider) {
         case 'smtp':
             return props.smtpFields;
+        case 'brevo':
+            return props.brevoFields;
         case 'postmark':
             return props.postmarkFields;
         case 'resend':
@@ -51,12 +54,13 @@ watch(() => form.provider, (newProvider) => {
 }, { immediate: true });
 
 const needsConfiguration = computed(() => {
-    return ['smtp', 'postmark', 'resend'].includes(form.provider);
+    return ['smtp', 'brevo', 'postmark', 'resend'].includes(form.provider);
 });
 
 const providerDescriptions = {
     faktur: 'Envoi via les serveurs de faktur.lu. Aucune configuration requise.',
     smtp: 'Utilisez votre propre serveur SMTP (Gmail, Office 365, OVH, etc.).',
+    brevo: 'Service d\'email marketing et transactionnel (anciennement Sendinblue).',
     postmark: 'Service d\'email transactionnel premium avec excellent taux de délivrabilité.',
     resend: 'API email moderne et simple à configurer.',
 };
@@ -225,6 +229,11 @@ const getInputType = (field, fieldConfig) => {
                             :required="fieldConfig.required"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         />
+
+                        <!-- Help text -->
+                        <p v-if="fieldConfig.help" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ fieldConfig.help }}
+                        </p>
                     </div>
 
                     <p v-if="form.errors.config" class="text-sm text-red-600">

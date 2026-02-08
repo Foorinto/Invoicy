@@ -26,6 +26,7 @@ class EmailProviderService
 
         return match ($settings->provider) {
             EmailSettings::PROVIDER_SMTP => $this->createSmtpMailer($settings),
+            EmailSettings::PROVIDER_BREVO => $this->createBrevoMailer($settings),
             EmailSettings::PROVIDER_POSTMARK => $this->createPostmarkMailer($settings),
             EmailSettings::PROVIDER_RESEND => $this->createResendMailer($settings),
             default => Mail::mailer(),
@@ -52,6 +53,38 @@ class EmailProviderService
             'encryption' => $config['encryption'] ?? 'tls',
             'username' => $config['username'] ?? '',
             'password' => $config['password'] ?? '',
+            'timeout' => 30,
+        ]);
+
+        // Set the from address
+        Config::set("mail.mailers.{$mailerName}.from", [
+            'address' => $settings->getEffectiveFromAddress(),
+            'name' => $settings->getEffectiveFromName(),
+        ]);
+
+        return Mail::mailer($mailerName);
+    }
+
+    /**
+     * Create a Brevo mailer from user settings.
+     */
+    protected function createBrevoMailer(EmailSettings $settings): Mailer
+    {
+        $config = $settings->provider_config;
+
+        if (!$config || empty($config['api_key'])) {
+            return Mail::mailer();
+        }
+
+        $mailerName = 'user_brevo_' . $settings->user_id;
+
+        Config::set("mail.mailers.{$mailerName}", [
+            'transport' => 'smtp',
+            'host' => 'smtp-relay.brevo.com',
+            'port' => 587,
+            'encryption' => 'tls',
+            'username' => $config['username'] ?? '',
+            'password' => $config['api_key'],
             'timeout' => 30,
         ]);
 
@@ -114,6 +147,7 @@ class EmailProviderService
         try {
             $mailer = match ($settings->provider) {
                 EmailSettings::PROVIDER_SMTP => $this->createSmtpMailer($settings),
+                EmailSettings::PROVIDER_BREVO => $this->createBrevoMailer($settings),
                 EmailSettings::PROVIDER_POSTMARK => $this->createPostmarkMailer($settings),
                 EmailSettings::PROVIDER_RESEND => $this->createResendMailer($settings),
                 default => Mail::mailer(),

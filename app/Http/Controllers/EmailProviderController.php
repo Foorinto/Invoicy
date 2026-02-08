@@ -34,6 +34,7 @@ class EmailProviderController extends Controller
             ],
             'providers' => EmailSettings::PROVIDERS,
             'smtpFields' => EmailSettings::getSmtpConfigFields(),
+            'brevoFields' => EmailSettings::getBrevoConfigFields(),
             'postmarkFields' => EmailSettings::getPostmarkConfigFields(),
             'resendFields' => EmailSettings::getResendConfigFields(),
             'userEmail' => $request->user()->email,
@@ -56,10 +57,12 @@ class EmailProviderController extends Controller
             'config.encryption' => 'nullable|in:tls,ssl,',
             'config.username' => 'required_if:provider,smtp|nullable|string|max:255',
             'config.password' => 'required_if:provider,smtp|nullable|string|max:255',
+            // Brevo config validation
+            'config.username' => 'required_if:provider,brevo|nullable|email|max:255',
             // Postmark config validation
             'config.token' => 'required_if:provider,postmark|nullable|string|max:255',
-            // Resend config validation
-            'config.api_key' => 'required_if:provider,resend|nullable|string|max:255',
+            // Resend config validation (also used by Brevo for api_key)
+            'config.api_key' => 'required_if:provider,resend|required_if:provider,brevo|nullable|string|max:255',
         ]);
 
         $settings = EmailSettings::getOrCreate($request->user());
